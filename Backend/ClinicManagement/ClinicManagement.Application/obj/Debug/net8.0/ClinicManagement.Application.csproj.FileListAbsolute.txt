@@ -1,0 +1,15 @@
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\bin\Debug\net8.0\ClinicManagement.Application.deps.json
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\bin\Debug\net8.0\ClinicManagement.Application.dll
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\bin\Debug\net8.0\ClinicManagement.Application.pdb
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\bin\Debug\net8.0\ClinicManagement.Domain.dll
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\bin\Debug\net8.0\ClinicManagement.Domain.pdb
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\obj\Debug\net8.0\ClinicManagement.Application.csproj.AssemblyReference.cache
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\obj\Debug\net8.0\ClinicManagement.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\obj\Debug\net8.0\ClinicManagement.Application.AssemblyInfoInputs.cache
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\obj\Debug\net8.0\ClinicManagement.Application.AssemblyInfo.cs
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\obj\Debug\net8.0\ClinicManagement.Application.csproj.CoreCompileInputs.cache
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\obj\Debug\net8.0\ClinicMa.5CCDC83B.Up2Date
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\obj\Debug\net8.0\ClinicManagement.Application.dll
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\obj\Debug\net8.0\refint\ClinicManagement.Application.dll
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\obj\Debug\net8.0\ClinicManagement.Application.pdb
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Application\obj\Debug\net8.0\ref\ClinicManagement.Application.dll

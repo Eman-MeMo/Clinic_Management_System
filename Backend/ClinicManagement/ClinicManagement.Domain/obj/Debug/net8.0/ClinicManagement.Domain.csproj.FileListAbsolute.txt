@@ -1,0 +1,12 @@
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\bin\Debug\net8.0\ClinicManagement.Domain.deps.json
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\bin\Debug\net8.0\ClinicManagement.Domain.dll
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\bin\Debug\net8.0\ClinicManagement.Domain.pdb
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\obj\Debug\net8.0\ClinicManagement.Domain.csproj.AssemblyReference.cache
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\obj\Debug\net8.0\ClinicManagement.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\obj\Debug\net8.0\ClinicManagement.Domain.AssemblyInfoInputs.cache
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\obj\Debug\net8.0\ClinicManagement.Domain.AssemblyInfo.cs
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\obj\Debug\net8.0\ClinicManagement.Domain.csproj.CoreCompileInputs.cache
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\obj\Debug\net8.0\ClinicManagement.Domain.dll
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\obj\Debug\net8.0\refint\ClinicManagement.Domain.dll
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\obj\Debug\net8.0\ClinicManagement.Domain.pdb
+C:\Users\asus\source\repos\ClinicManagement\ClinicManagement.Domain\obj\Debug\net8.0\ref\ClinicManagement.Domain.dll
