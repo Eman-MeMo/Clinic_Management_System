@@ -1,7 +1,7 @@
 ﻿using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain;
 using ClinicManagement.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore; // ✅ مهم
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
