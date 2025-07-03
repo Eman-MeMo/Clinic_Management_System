@@ -12,8 +12,12 @@ namespace ClinicManagement.Application.Mapper
     public class AdminProfile:Profile
     {
         public AdminProfile() {
-            CreateMap<Admin, AdminRegisterDto>().ReverseMap();
+            CreateMap<AdminRegisterDto, Admin>()
+             .AfterMap((src, dest) => {
+                 dest.UserName = src.FirstName + src.LastName;
+             });
+
         }
-        
+
     }
 }

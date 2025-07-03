@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Domain.Entities
 {
-    public class Appointment
+    public class Appointment: BaseEntity
     {
-        public int Id { get; set; }
         public DateTime Date { get; set; }
         public AppointmentStatus Status { get; set; }
         public string Notes { get; set; }

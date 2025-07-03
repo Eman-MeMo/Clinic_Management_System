@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Domain.Entities
 {
-    public class Attendance
+    public class Attendance: BaseEntity
     {
-        public int Id { get; set; }
         public bool IsPresent { get; set; }
         public DateTime Date { get; set; }
         

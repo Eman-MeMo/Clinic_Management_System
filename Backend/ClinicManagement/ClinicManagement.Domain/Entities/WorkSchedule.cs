@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Domain.Entities
 {
-    public class WorkSchedule
+    public class WorkSchedule: BaseEntity
     {
-        public int Id { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public DayOfWeek DayOfWeek { get; set; }

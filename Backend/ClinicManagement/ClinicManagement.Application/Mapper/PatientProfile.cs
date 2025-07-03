@@ -13,7 +13,10 @@ namespace ClinicManagement.Application.Mapper
     {
         public PatientProfile()
         {
-            CreateMap<Patient, PatientRegisterDto>().ReverseMap();
+            CreateMap<PatientRegisterDto, Patient>()
+            .AfterMap((src, dest) => {
+                dest.UserName = src.FirstName + src.LastName;
+            });
         }
     }
 }

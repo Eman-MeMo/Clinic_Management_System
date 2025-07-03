@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Domain.Entities
 {
-    public class Service
+    public class Service: BaseEntity
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public decimal Price { get; set; }
         public int Duration { get; set; } // Duration in minutes

@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Domain.Entities
 {
-    public class AuditLog
+    public class AuditLog: BaseEntity
     {
-        public int Id { get; set; }
         public string Action { get; set; } 
         public string TableName { get; set; }
         public DateTime Timestamp { get; set; }

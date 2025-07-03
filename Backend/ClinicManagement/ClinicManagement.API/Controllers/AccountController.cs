@@ -42,9 +42,8 @@ namespace ClinicManagement.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await userManager.FindByEmailAsync(model.Username)
-                    ?? await userManager.FindByNameAsync(model.Username);
-
+            var user = await userManager.FindByEmailAsync(model.Email);
+                    
             if (user == null || !user.IsActive)
                 return Unauthorized("Invalid username or password.");
 

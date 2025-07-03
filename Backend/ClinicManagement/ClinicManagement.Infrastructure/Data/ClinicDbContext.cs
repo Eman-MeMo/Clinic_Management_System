@@ -1,4 +1,5 @@
 ﻿using ClinicManagement.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -39,6 +40,8 @@ namespace ClinicManagement.Infrastructure.Data
             modelBuilder.Entity<Service>()
                 .Property(s => s.Price)
                 .HasColumnType("decimal(18,2)");
+
+
         }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<Appointment> Appointments { get; set; }

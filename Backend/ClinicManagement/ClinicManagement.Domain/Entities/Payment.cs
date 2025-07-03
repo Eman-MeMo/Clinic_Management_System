@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Domain.Entities
 {
-    public class Payment
+    public class Payment: BaseEntity
     {
-        public int Id { get; set; }
         public decimal Amount { get; set; }
         public DateTime Date { get; set; }
         public PaymentMethod PaymentMethod { get; set; }

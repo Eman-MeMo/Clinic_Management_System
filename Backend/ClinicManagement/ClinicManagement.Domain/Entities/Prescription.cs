@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Domain.Entities
 {
-    public class Prescription
+    public class Prescription: BaseEntity
     {
-        public int Id { get; set; }
         public string MedicationName { get; set; }
         public string Dosage { get; set; }
         public string Notes { get; set; }

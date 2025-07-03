@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Domain.Entities
 {
-    public class Specialization
+    public class Specialization: BaseEntity
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
     }

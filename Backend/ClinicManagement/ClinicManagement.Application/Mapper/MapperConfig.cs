@@ -11,7 +11,7 @@ namespace ClinicManagement.Application.Mapper
     {
         public static void AddMappingProfiles(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(PatientProfile).Assembly);
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         }
     }
 }
