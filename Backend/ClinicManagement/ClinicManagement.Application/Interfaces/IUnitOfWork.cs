@@ -9,6 +9,9 @@ namespace ClinicManagement.Application.Interfaces
 {
     public interface IUnitOfWork
     {
+        IDoctorRepository DoctorRepository { get; }
+        IPatientRepository PatientRepository { get; }
+        IUserRepository<Admin> AdminRepository { get; }
         IAppointmentRepository AppointmentRepository { get; }
         IGenericRepository<Attendance> AttendanceRepository { get; }
         IGenericRepository<AuditLog> AuditLogRepository { get; }

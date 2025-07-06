@@ -10,9 +10,12 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Infrastructure.Repositories
 {
-    internal class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
         private readonly ClinicDbContext db;
+        private IDoctorRepository DoctorRepo;
+        private IPatientRepository PatientRepo;
+        private IUserRepository<Admin> AdminRepo;
         private IAppointmentRepository AppointmentRepo;
         private IGenericRepository<Attendance> AttendanceRepo;
         private IGenericRepository<AuditLog> AuditLogRepo;
@@ -28,6 +31,33 @@ namespace ClinicManagement.Infrastructure.Repositories
         public UnitOfWork(ClinicDbContext context)
         {
             db = context;
+        }
+        public IDoctorRepository DoctorRepository
+        {
+            get
+            {
+                if (DoctorRepo == null)
+                    DoctorRepo= new DoctorRepository(db);
+                return DoctorRepo;
+            }
+        }
+        public IPatientRepository PatientRepository
+        {
+            get
+            {
+                if (PatientRepo == null)
+                    PatientRepo = new PatientRepository(db);
+                return PatientRepo;
+            }
+        }
+        public IUserRepository<Admin> AdminRepository
+        {
+            get
+            {
+                if (AdminRepo == null)
+                    return new UserRepository<Admin>(db);
+                return AdminRepo;
+            }
         }
         public IAppointmentRepository AppointmentRepository
         {

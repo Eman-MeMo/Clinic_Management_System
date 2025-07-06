@@ -6,6 +6,8 @@ using ClinicManagement.Domain.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ClinicManagement.Application.Interfaces;
+using ClinicManagement.Infrastructure.Repositories;
 
 namespace ClinicManagement.API
 {
@@ -71,6 +73,20 @@ namespace ClinicManagement.API
                           .AllowCredentials();
                 });
             });
+
+            // Dependency Injection for Repositories and Services
+                // Repositories
+                builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+                builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+                builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+                builder.Services.AddScoped<IUserRepository<AppUser>, UserRepository<AppUser>>();
+                builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+                // Services
+                builder.Services.AddScoped<IAuditLoggerService, AuditLoggerService>();
+
+                // Unit of Work
+                builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();
 

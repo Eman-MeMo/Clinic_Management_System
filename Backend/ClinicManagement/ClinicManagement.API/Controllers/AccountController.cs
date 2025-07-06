@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.DTOs.AccountDTOs;
 using ClinicManagement.Domain.Entities;
 using ClinicManagement.Infrastructure.Data;
@@ -16,10 +17,13 @@ namespace ClinicManagement.API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<AppUser> userManager;
-        private readonly SignInManager<AppUser> signInManager;
         private readonly IMapper mapper;
         private readonly IConfiguration config;
         private readonly ClinicDbContext db;
+        private readonly IAuditLoggerService auditLogger;
+
+        private string? UserId => User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
 
         private readonly string[] allowedRoles = new[] { "Admin", "Doctor", "Patient" };
 
@@ -27,13 +31,13 @@ namespace ClinicManagement.API.Controllers
                                  SignInManager<AppUser> _signInManager,
                                  IMapper _mapper,
                                  IConfiguration _config,
-                                 ClinicDbContext _db)
+                                 ClinicDbContext _db,IAuditLoggerService _auditLogger)
         {
             userManager = _userManager;
-            signInManager = _signInManager;
             mapper = _mapper;
             config = _config;
             db = _db;
+            auditLogger = _auditLogger;
         }
 
         [HttpPost("Login")]
@@ -58,7 +62,9 @@ namespace ClinicManagement.API.Controllers
                 return Unauthorized("User does not have a valid role.");
 
             var token = GenerateJWTAuthentication(user, role);
-            LogAudit("Login", user.Id, $"User '{user.UserName}' with role '{role}' logged in.");
+
+            //Log the successful login attempt
+            await auditLogger.LogAsync("Login", user.Id, $"User '{user.UserName}' logged in successfully.", UserId);
 
             return Ok(new
             {
@@ -83,7 +89,9 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Failed to assign Patient role.");
 
             var token = GenerateJWTAuthentication(patient, "Patient");
-            LogAudit("Register", patient.Id, $"New user '{patient.UserName}' registered as Patient.");
+
+            //Log the successful registration
+            await auditLogger.LogAsync("Register", patient.Id, $"New user '{patient.UserName}' registered as Patient.", UserId);
 
             return Ok(new { message = "Registered successfully", token });
         }
@@ -104,7 +112,9 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Failed to assign Doctor role.");
 
             var token = GenerateJWTAuthentication(doctor, "Doctor");
-            LogAudit("Register", doctor.Id, $"New user '{doctor.UserName}' registered as Doctor.");
+
+            //Log the successful registration
+            await auditLogger.LogAsync("Register", doctor.Id, $"New user '{doctor.UserName}' registered as Doctor.", UserId);
 
             return Ok(new { message = "Registered successfully", token });
         }
@@ -125,7 +135,8 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Failed to assign Admin role.");
 
             var token = GenerateJWTAuthentication(admin, "Admin");
-            LogAudit("Register", admin.Id, $"New user '{admin.UserName}' registered as Admin.");
+            //Log the successful registration
+            await auditLogger.LogAsync("Register", admin.Id, $"New user '{admin.UserName}' registered as Admin.", UserId);
 
             return Ok(new { message = "Registered successfully", token });
         }
@@ -153,20 +164,6 @@ namespace ClinicManagement.API.Controllers
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private void LogAudit(string action, string userId, string details)
-        {
-            db.AuditLogs.Add(new AuditLog
-            {
-                Action = action,
-                TableName = "AppUser",
-                Timestamp = DateTime.UtcNow,
-                Details = details,
-                AppUserId = userId
-            });
-
-            db.SaveChanges();
         }
     }
 }
