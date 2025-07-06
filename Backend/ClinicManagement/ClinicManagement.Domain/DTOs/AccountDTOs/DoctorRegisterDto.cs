@@ -24,8 +24,7 @@ namespace ClinicManagement.Domain.DTOs.AccountDTOs
         public bool IsActive { get; set; } = true;
 
         [Required(ErrorMessage = "Specialty is required.")]
-        [StringLength(100, ErrorMessage = "Specialty can't be longer than 100 characters.")]
-        public string Specialty { get; set; }
+        public int SpecializationId { get; set; }
 
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email address.")]
