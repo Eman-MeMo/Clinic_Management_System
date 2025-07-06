@@ -9,36 +9,36 @@ namespace ClinicManagement.Infrastructure.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
-        protected readonly ClinicDbContext _context;
+        protected readonly ClinicDbContext db;
 
-        public GenericRepository(ClinicDbContext context)
+        public GenericRepository(ClinicDbContext _db)
         {
-            _context = context;
+            db = _db;
         }
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _context.Set<T>().ToListAsync();
+            return await db.Set<T>().ToListAsync();
         }
 
         public async Task<T> GetByIdAsync(int id)
         {
-            return await _context.Set<T>().FindAsync(id);
+            return await db.Set<T>().FindAsync(id);
         }
 
         public async Task AddAsync(T entity)
         {
-            await _context.Set<T>().AddAsync(entity);
+            await db.Set<T>().AddAsync(entity);
         }
 
         public void Update(T entity)
         {
-            _context.Set<T>().Update(entity);
+            db.Set<T>().Update(entity);
         }
 
         public void Delete(T entity)
         {
-            _context.Set<T>().Remove(entity);
+            db.Set<T>().Remove(entity);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace ClinicManagement.Infrastructure.Repositories
     internal class UnitOfWork : IUnitOfWork
     {
         private readonly ClinicDbContext db;
-        private IGenericRepository<Appointment> AppointmentRepo;
+        private IAppointmentRepository AppointmentRepo;
         private IGenericRepository<Attendance> AttendanceRepo;
         private IGenericRepository<AuditLog> AuditLogRepo;
         private IGenericRepository<Bill> BillRepo;
@@ -29,12 +29,12 @@ namespace ClinicManagement.Infrastructure.Repositories
         {
             db = context;
         }
-        public IGenericRepository<Appointment> AppointmentRepository
+        public IAppointmentRepository AppointmentRepository
         {
             get
             {
                 if(AppointmentRepo == null)
-                    AppointmentRepo = new GenericRepository<Appointment>(db);
+                    AppointmentRepo = new AppointmentRepository(db);
                 return AppointmentRepo;
             }
         }

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using ClinicManagement.Domain.DTOs;
+using ClinicManagement.Domain.DTOs.AccountDTOs;
 using ClinicManagement.Domain.Entities;
 using ClinicManagement.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;

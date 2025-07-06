@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClinicManagement.Domain.DTOs
+namespace ClinicManagement.Domain.DTOs.AccountDTOs
 {
     public class LoginDto
     {
