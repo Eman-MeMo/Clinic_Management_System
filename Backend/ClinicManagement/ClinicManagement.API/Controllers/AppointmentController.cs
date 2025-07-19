@@ -1,15 +1,19 @@
 ﻿using AutoMapper;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.DTOs.AppointmentDTOs;
+using ClinicManagement.Domain.DTOs.Pagination;
+using ClinicManagement.Domain.DTOs.PatientDTOs;
+using ClinicManagement.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Security.Claims;
 
 namespace ClinicManagement.API.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]
     [ApiController]
     public class AppointmentController : ControllerBase
     {
@@ -25,15 +29,25 @@ namespace ClinicManagement.API.Controllers
             auditLogger = _auditLogger;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllAppointments()
+        public async Task<IActionResult> GetAllAppointments([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var appointments = await unitOfWork.AppointmentRepository.GetAllAsync();
-            if (appointments == null || !appointments.Any())
+            var appointments =  unitOfWork.AppointmentRepository.GetAllAsQueryable();
+            var totalCount = await appointments.CountAsync();
+            var paginationSkip = (pageNumber - 1) * pageSize;
+            var items = await appointments
+                .Skip(paginationSkip)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var appointmentDtos = mapper.Map<List<AppointmentDto>>(items);
+            var result = new PaginatedResultDto<AppointmentDto>
             {
-                return NotFound("No appointments found.");
-            }
-            var appointmentDtos = mapper.Map<IEnumerable<AppointmentDto>>(appointments);
-            return Ok(appointmentDtos);
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Items = appointmentDtos
+            };
+            return Ok(result);
         }
         [HttpGet("doctor/{id}")]
         public async Task<IActionResult> GetAllAppointmentsByDoctorId(string id)
@@ -71,9 +85,6 @@ namespace ClinicManagement.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAppointment([FromBody] CreateAppointmentDto appointmentDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             if (appointmentDto == null)
             {
                 return BadRequest("Appointment data is null.");
@@ -94,12 +105,30 @@ namespace ClinicManagement.API.Controllers
 
             return CreatedAtAction(nameof(GetAppointmentById), new { id = appointment.Id }, mapper.Map<AppointmentDto>(appointment));
         }
+        [HttpPut("cancel-appointment/{appointmentId}")]
+        public async Task<IActionResult> CancelAppointment(int appointmentId)
+        {
+            if (appointmentId < 1)
+                return BadRequest("Invalid appointment ID.");
+
+            var appointment = await unitOfWork.AppointmentRepository.GetByIdAsync(appointmentId);
+            if (appointment == null)
+                return NotFound("Appointment not found.");
+
+            bool hasSession = await unitOfWork.SessionRepository.HasSessionForAppointmentAsync(appointmentId);
+            if (hasSession)
+                return BadRequest("Cannot cancel appointment. A session has already been started for this appointment.");
+
+            await unitOfWork.AppointmentRepository.UpdateAppointmentStatusAsync(appointmentId, AppointmentStatus.Cancelled);
+
+            // Log the cancellation of the appointment
+            await auditLogger.LogAsync("Cancel Appointment", "Appointment", $"Canceled appointment ID {appointmentId}", UserId);
+            return Ok("Appointment canceled successfully.");
+        }
+
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateAppointment(int id, [FromBody] AppointmentDto appointmentDto) 
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             if (appointmentDto == null)
             {
                 return BadRequest("Appointment data is null.");
@@ -124,12 +153,27 @@ namespace ClinicManagement.API.Controllers
             await auditLogger.LogAsync("Update", "Appointment", $"Updated appointment with ID {existingAppointment.Id}", UserId);
             return NoContent();
         }
+        [HttpPut("status/{id:int}")]
+        public async Task<IActionResult> UpdateAppointmentStatus(int id, [FromBody] AppointmentStatus status)
+        {
+            var appointment = await unitOfWork.AppointmentRepository.GetByIdAsync(id);
+            if (appointment == null)
+            {
+                return NotFound($"Appointment with ID {id} not found.");
+            }
+            // Update the appointment status
+            appointment.Status = status;
+
+            await unitOfWork.AppointmentRepository.UpdateAppointmentStatusAsync(id, status);
+            await unitOfWork.SaveChangesAsync();
+
+            // Log the status update of the appointment
+            await auditLogger.LogAsync("Update", "Appointment Status", $"Updated status of appointment with ID {appointment.Id} to {status}", UserId);
+            return NoContent();
+        }
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteAppointment(int id)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var appointment = await unitOfWork.AppointmentRepository.GetByIdAsync(id);
             if (appointment == null)
             {

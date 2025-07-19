@@ -48,9 +48,6 @@ namespace ClinicManagement.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateService([FromBody] CreateServiceDto serviceDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             if (serviceDto == null)
             {
                 return BadRequest("Service data is null.");
@@ -69,9 +66,6 @@ namespace ClinicManagement.API.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateService(int id, [FromBody] ServiceDto serviceDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             if (serviceDto == null || id != serviceDto.Id)
             {
                 return BadRequest("Invalid service data!");
@@ -93,9 +87,6 @@ namespace ClinicManagement.API.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteService(int id)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var service = await unitOfWork.ServiceRepository.GetByIdAsync(id);
             if (service == null)
             {

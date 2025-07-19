@@ -10,7 +10,7 @@ namespace ClinicManagement.Domain.Entities
     {
         public string Name { get; set; }
         public decimal Price { get; set; }
-        public int Duration { get; set; } // Duration in minutes
+        public TimeSpan Duration { get; set; }
         public ICollection<SessionService> SessionServices { get; set; } = new List<SessionService>();
     }
 }

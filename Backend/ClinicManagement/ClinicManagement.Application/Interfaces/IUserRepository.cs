@@ -10,6 +10,7 @@ namespace ClinicManagement.Application.Interfaces
     public interface IUserRepository<T> where T : AppUser
     {
         Task<IEnumerable<T>> GetAllAsync();
+        IQueryable<T> GetAllAsQueryable();
         Task<T> GetByIdAsync(string id);
         Task<T> GetByEmailAsync(string email);
         Task<T> DeactivateUserAsync(string id);

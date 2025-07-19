@@ -43,9 +43,6 @@ namespace ClinicManagement.API.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var user = await userManager.FindByEmailAsync(model.Email);
                     
             if (user == null || !user.IsActive)
@@ -76,9 +73,6 @@ namespace ClinicManagement.API.Controllers
         [HttpPost("Patient_Register")]
         public async Task<IActionResult> PatientRegister([FromBody] PatientRegisterDto model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var patient = mapper.Map<Patient>(model);
             var result = await userManager.CreateAsync(patient, model.Password);
             if (!result.Succeeded)
@@ -99,9 +93,6 @@ namespace ClinicManagement.API.Controllers
         [HttpPost("Doctor_Register")]
         public async Task<IActionResult> DoctorRegister([FromBody] DoctorRegisterDto model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var doctor = mapper.Map<Doctor>(model);
             var result = await userManager.CreateAsync(doctor, model.Password);
             if (!result.Succeeded)
@@ -122,9 +113,6 @@ namespace ClinicManagement.API.Controllers
         [HttpPost("Admin_Register")]
         public async Task<IActionResult> AdminRegister([FromBody] AdminRegisterDto model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var admin = mapper.Map<Admin>(model);
             var result = await userManager.CreateAsync(admin, model.Password);
             if (!result.Succeeded)
@@ -135,6 +123,7 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Failed to assign Admin role.");
 
             var token = GenerateJWTAuthentication(admin, "Admin");
+
             //Log the successful registration
             await auditLogger.LogAsync("Register", admin.Id, $"New user '{admin.UserName}' registered as Admin.", UserId);
 

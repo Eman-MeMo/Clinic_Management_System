@@ -6,8 +6,8 @@ using ClinicManagement.Domain.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Infrastructure.Repositories;
+using ClinicManagement.Application.Interfaces;
 
 namespace ClinicManagement.API
 {
@@ -80,6 +80,14 @@ namespace ClinicManagement.API
                 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
                 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
                 builder.Services.AddScoped<IUserRepository<AppUser>, UserRepository<AppUser>>();
+                builder.Services.AddScoped<IAttendanceRepository,AttendanceRepository>();
+                builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
+                builder.Services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
+                builder.Services.AddScoped<IWorkScheduleRepository, WorkScheduleRepository>();
+                builder.Services.AddScoped<IBillRepository, BillRepository>();
+                builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+                builder.Services.AddScoped<ISessionServiceRepository, SessionServiceRepository>();
+                builder.Services.AddScoped<ISessionRepository, SessionRepository>();
                 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
                 // Services

@@ -58,8 +58,6 @@ namespace ClinicManagement.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAdmin(string id, [FromBody] AdminDto adminDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             if (adminDto == null)
             {
                 return BadRequest("Admin data is null.");

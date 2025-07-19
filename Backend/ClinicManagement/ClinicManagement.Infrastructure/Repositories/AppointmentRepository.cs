@@ -1,6 +1,7 @@
 ﻿using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.DTOs.AppointmentDTOs;
 using ClinicManagement.Domain.Entities;
+using ClinicManagement.Domain.Enums;
 using ClinicManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -19,17 +20,17 @@ namespace ClinicManagement.Infrastructure.Repositories
         }
         public async Task<IEnumerable<Appointment>> GetAllByDoctorIdAsync(string doctorId)
         {
-            return await db.Appointments.Where(p=>p.DoctorId==doctorId).ToListAsync();
+            return await db.Appointments.AsNoTracking().Where(p=>p.DoctorId==doctorId).ToListAsync();
         }
 
         public async Task<IEnumerable<Appointment>> GetAllByPatientIdAsync(string pateintId)
         {
-            return await db.Appointments.Where(p => p.PatientId == pateintId).ToListAsync();
+            return await db.Appointments.AsNoTracking().Where(p => p.PatientId == pateintId).ToListAsync();
         }
         public async Task<bool> IsDoctorAvailableAsync(string doctorId, DateTime date, int? appointmentIdToExclude = null)
         {
             // Check if the doctor exists
-            var workSchedule = await db.WorkSchedules
+            var workSchedule = await db.WorkSchedules.AsNoTracking()
                 .FirstOrDefaultAsync(ws =>
                     ws.DoctorId == doctorId &&
                     ws.IsAvailable == true &&
@@ -53,6 +54,14 @@ namespace ClinicManagement.Infrastructure.Repositories
 
             return !hasConflict;
         }
+        public async Task<bool> UpdateAppointmentStatusAsync(int appointmentId, AppointmentStatus status)
+        {
+            var appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId);
+            if (appointment == null) return false;
 
+            appointment.Status = status;
+            await db.SaveChangesAsync();
+            return true;
+        }
     }
 }

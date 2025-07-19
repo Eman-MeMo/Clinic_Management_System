@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Interfaces
 {
-    public interface IPatientRepository:IUserRepository<Patient>
+    public interface IPatientRepository : IUserRepository<Patient>
     {
         Task<Patient> GetByNationalIdAsync(string nationId);
     }

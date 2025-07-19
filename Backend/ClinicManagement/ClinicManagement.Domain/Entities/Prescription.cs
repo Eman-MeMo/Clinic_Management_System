@@ -11,7 +11,7 @@ namespace ClinicManagement.Domain.Entities
     {
         public string MedicationName { get; set; }
         public string Dosage { get; set; }
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
 
         [ForeignKey("Session")]
         public int SessionId { get; set; }

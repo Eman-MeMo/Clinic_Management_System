@@ -19,9 +19,12 @@ namespace ClinicManagement.Infrastructure.Repositories
         }
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await db.Set<T>().ToListAsync();
+            return await db.Set<T>().AsNoTracking().ToListAsync();
         }
-
+        public IQueryable<T> GetAllAsQueryable()
+        {
+            return db.Set<T>().AsQueryable();
+        }
         public async Task<T> GetByIdAsync(string id)
         {
             return await db.Set<T>().FindAsync(id);
@@ -43,7 +46,7 @@ namespace ClinicManagement.Infrastructure.Repositories
         }
         public async Task<T> GetByEmailAsync(string email)
         {
-            return await db.Set<T>().FirstOrDefaultAsync(p => p.Email == email);
+            return await db.Set<T>().AsNoTracking().FirstOrDefaultAsync(p => p.Email == email);
         }
         public async Task<T> DeactivateUserAsync(string id)
         {

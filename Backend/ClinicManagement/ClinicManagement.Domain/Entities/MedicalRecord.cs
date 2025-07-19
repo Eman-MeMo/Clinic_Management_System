@@ -10,7 +10,7 @@ namespace ClinicManagement.Domain.Entities
     public class MedicalRecord: BaseEntity
     {
         public DateTime Date { get; set; }
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
         public string Diagnosis { get; set; }
 
         [ForeignKey("Patient")]

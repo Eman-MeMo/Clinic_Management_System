@@ -51,9 +51,6 @@ namespace ClinicManagement.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateSpecialization([FromBody] CreateSpecializationDto specializationDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             if (specializationDto == null)
             {
                 return BadRequest("Specialization data is null.");
@@ -72,9 +69,6 @@ namespace ClinicManagement.API.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateSpecialization(int id, [FromBody] SpecializationDto specializationDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             if (specializationDto == null || id != specializationDto.Id)
             {
                 return BadRequest("Invalid specialization data.");
@@ -96,9 +90,6 @@ namespace ClinicManagement.API.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteSpecialization(int id)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var specialization = await unitOfWork.SpecializationRepository.GetByIdAsync(id);
             if (specialization == null)
             {

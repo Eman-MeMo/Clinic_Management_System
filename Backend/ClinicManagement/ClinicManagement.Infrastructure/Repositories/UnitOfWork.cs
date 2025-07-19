@@ -17,16 +17,17 @@ namespace ClinicManagement.Infrastructure.Repositories
         private IPatientRepository PatientRepo;
         private IUserRepository<Admin> AdminRepo;
         private IAppointmentRepository AppointmentRepo;
-        private IGenericRepository<Attendance> AttendanceRepo;
+        private IAttendanceRepository AttendanceRepo;
         private IGenericRepository<AuditLog> AuditLogRepo;
-        private IGenericRepository<Bill> BillRepo;
-        private IGenericRepository<MedicalRecord> MedicalRecordRepo;
-        private IGenericRepository<Payment> PaymentRepo;
-        private IGenericRepository<Prescription> PrescriptionRepo;
+        private IBillRepository BillRepo;
+        private IMedicalRecordRepository MedicalRecordRepo;
+        private IPaymentRepository PaymentRepo;
+        private IPrescriptionRepository PrescriptionRepo;
         private IGenericRepository<Service> ServiceRepo;
-        private IGenericRepository<Session> SessionRepo;
+        private ISessionServiceRepository SessionServiceRepo;
+        private ISessionRepository SessionRepo;
         private IGenericRepository<Specialization> SpecializationRepo;
-        private IGenericRepository<WorkSchedule> WorkScheduleRepo;
+        private IWorkScheduleRepository WorkScheduleRepo;
 
         public UnitOfWork(ClinicDbContext context)
         {
@@ -69,12 +70,12 @@ namespace ClinicManagement.Infrastructure.Repositories
             }
         }
 
-        public IGenericRepository<Attendance> AttendanceRepository
+        public IAttendanceRepository AttendanceRepository
         {
             get
             {
                 if (AttendanceRepo == null)
-                    AttendanceRepo = new GenericRepository<Attendance>(db);
+                    AttendanceRepo = new AttendanceRepository(db);
                 return AttendanceRepo;
             }
         }
@@ -89,40 +90,40 @@ namespace ClinicManagement.Infrastructure.Repositories
             }
         }
 
-        public IGenericRepository<Bill> BillRepository {
+        public IBillRepository BillRepository {
             get
             {
                 if (BillRepo == null)
-                    BillRepo = new GenericRepository<Bill>(db);
+                    BillRepo = new BillRepository(db);
                 return BillRepo;
             }
         }
 
-        public IGenericRepository<MedicalRecord> MedicalRecordRepository
+        public IMedicalRecordRepository MedicalRecordRepository
         {
             get
             {
                 if (MedicalRecordRepo == null)
-                    MedicalRecordRepo = new GenericRepository<MedicalRecord>(db);
+                    MedicalRecordRepo = new MedicalRecordRepository(db);
                 return MedicalRecordRepo;
             }
         }
 
-        public IGenericRepository<Payment> PaymentRepository
+        public IPaymentRepository PaymentRepository
         {
             get
             {
                 if (PaymentRepo == null)
-                    PaymentRepo = new GenericRepository<Payment>(db);
+                    PaymentRepo = new PaymentRepository(db);
                 return PaymentRepo;
             }
         }
 
-        public IGenericRepository<Prescription> PrescriptionRepository {
+        public IPrescriptionRepository PrescriptionRepository {
             get
             {
                 if (PrescriptionRepo == null)
-                    PrescriptionRepo = new GenericRepository<Prescription>(db);
+                    PrescriptionRepo = new PrescriptionRepository(db);
                 return PrescriptionRepo;
             }
         }
@@ -137,16 +138,24 @@ namespace ClinicManagement.Infrastructure.Repositories
             }
         }
 
-        public IGenericRepository<Session> SessionRepository
+        public ISessionRepository SessionRepository
         {
             get
             {
                 if (SessionRepo == null)
-                    SessionRepo = new GenericRepository<Session>(db);
+                    SessionRepo = new SessionRepository(db);
                 return SessionRepo;
             }
         }
-
+        public ISessionServiceRepository SessionServiceRepository
+        {
+            get
+            {
+                if (SessionServiceRepo == null)
+                    SessionServiceRepo = new SessionServiceRepository(db);
+                return SessionServiceRepo;
+            }
+        }
         public IGenericRepository<Specialization> SpecializationRepository
         {
             get
@@ -157,12 +166,12 @@ namespace ClinicManagement.Infrastructure.Repositories
             }
         }
 
-        public IGenericRepository<WorkSchedule> WorkScheduleRepository
+        public IWorkScheduleRepository WorkScheduleRepository
         {
             get
             {
                 if (WorkScheduleRepo == null)
-                    WorkScheduleRepo = new GenericRepository<WorkSchedule>(db);
+                    WorkScheduleRepo = new WorkScheduleRepository(db);
                 return WorkScheduleRepo;
             }
         }

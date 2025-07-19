@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
 using ClinicManagement.Application.Interfaces;
+using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.DTOs.PatientDTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ClinicManagement.API.Controllers
 {
@@ -23,16 +26,29 @@ namespace ClinicManagement.API.Controllers
             auditLogger = _auditLogger;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllPatients()
+        public async Task<IActionResult> GetAllPatients([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var patients = await unitOfWork.PatientRepository.GetAllAsync();
-            if (patients == null || !patients.Any())
+            var patients = unitOfWork.PatientRepository.GetAllAsQueryable();
+
+            var totalCount = await patients.CountAsync();
+            var paginationSkip = (pageNumber - 1) * pageSize;
+
+            var items = await patients
+                .Skip(paginationSkip)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var result = new PaginatedResultDto<PatientDto>
             {
-                return NotFound("No patients found.");
-            }
-            var patientDtos = mapper.Map<IEnumerable<PatientDto>>(patients);
-            return Ok(patientDtos);
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Items = mapper.Map<List<PatientDto>>(items)
+            };
+
+            return Ok(result);
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPatientById(string id)
         {

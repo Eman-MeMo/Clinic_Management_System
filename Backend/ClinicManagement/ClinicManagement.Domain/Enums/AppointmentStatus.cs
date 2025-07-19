@@ -9,7 +9,7 @@ namespace ClinicManagement.Domain.Enums
     public enum AppointmentStatus
     {
         Scheduled,
-        Done,
+        Confirmed,
         Cancelled,
     }
 }

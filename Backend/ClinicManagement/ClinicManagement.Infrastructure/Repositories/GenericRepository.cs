@@ -18,9 +18,12 @@ namespace ClinicManagement.Infrastructure.Repositories
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await db.Set<T>().ToListAsync();
+            return await db.Set<T>().AsNoTracking().ToListAsync();
         }
-
+        public IQueryable<T> GetAllAsQueryable()
+        {
+            return db.Set<T>().AsQueryable();
+        }
         public async Task<T> GetByIdAsync(int id)
         {
             return await db.Set<T>().FindAsync(id);

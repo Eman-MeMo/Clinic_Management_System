@@ -13,16 +13,18 @@ namespace ClinicManagement.Application.Interfaces
         IPatientRepository PatientRepository { get; }
         IUserRepository<Admin> AdminRepository { get; }
         IAppointmentRepository AppointmentRepository { get; }
-        IGenericRepository<Attendance> AttendanceRepository { get; }
+        IAttendanceRepository AttendanceRepository { get; }
         IGenericRepository<AuditLog> AuditLogRepository { get; }
-        IGenericRepository<Bill> BillRepository { get; }
-        IGenericRepository<MedicalRecord> MedicalRecordRepository { get; }
-        IGenericRepository<Payment> PaymentRepository { get; }
-        IGenericRepository<Prescription> PrescriptionRepository { get; }
+        IBillRepository BillRepository { get; }
+        IMedicalRecordRepository MedicalRecordRepository { get; }
+        IPaymentRepository PaymentRepository { get; }
+        IPrescriptionRepository PrescriptionRepository { get; }
         IGenericRepository<Service> ServiceRepository { get; }
-        IGenericRepository<Session> SessionRepository { get; }
+        ISessionRepository SessionRepository { get; }
+
+        ISessionServiceRepository SessionServiceRepository { get; }
         IGenericRepository<Specialization> SpecializationRepository { get; }
-        IGenericRepository<WorkSchedule> WorkScheduleRepository { get; }
+        IWorkScheduleRepository WorkScheduleRepository { get; }
         Task<int> SaveChangesAsync();
     }
 }

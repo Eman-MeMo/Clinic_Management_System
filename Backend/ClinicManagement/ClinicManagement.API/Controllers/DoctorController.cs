@@ -58,8 +58,6 @@ namespace ClinicManagement.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateDoctor(string id, [FromBody] DoctorDto doctorDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             if (doctorDto == null || doctorDto.Id!=id)
             {
                 return BadRequest("Invalid data!");

@@ -18,7 +18,7 @@ namespace ClinicManagement.Infrastructure.Repositories
         }
         public async Task<Patient> GetByNationalIdAsync(string nationId)
         {
-            return await db.Set<Patient>().FirstOrDefaultAsync(p => p.NationID == nationId);
+            return await db.Set<Patient>().AsNoTracking().FirstOrDefaultAsync(p => p.NationID == nationId);
         }
     }
 }

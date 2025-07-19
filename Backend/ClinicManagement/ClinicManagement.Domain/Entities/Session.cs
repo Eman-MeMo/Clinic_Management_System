@@ -10,9 +10,10 @@ namespace ClinicManagement.Domain.Entities
 {
     public class Session: BaseEntity
     {
-        public DateTime Date { get; set; }
+        public DateTime? ActualStartTime { get; set; }   
+        public DateTime? ActualEndTime { get; set; }
         public SessionStatus Status { get; set; }
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
 
         [ForeignKey("Doctor")]
         public string DoctorId { get; set; }

@@ -17,27 +17,27 @@ namespace ClinicManagement.Infrastructure.Repositories
         }
         public async Task<IEnumerable<Doctor>> GetAllAsync()
         {
-            return await db.Set<Doctor>().Include(d=> d.Specialization).ToListAsync();
+            return await db.Set<Doctor>().AsNoTracking().Include(d=> d.Specialization).ToListAsync();
         }
 
         public async Task<Doctor> GetByIdAsync(string id)
         {
-            return await db.Set<Doctor>().Include(d => d.Specialization).FirstOrDefaultAsync(p=> p.Id == id);
+            return await db.Set<Doctor>().AsNoTracking().Include(d => d.Specialization).FirstOrDefaultAsync(p=> p.Id == id);
         }
         public async Task<Doctor> GetByEmailAsync(string email)
         {
-            return await db.Set<Doctor>().Include(d => d.Specialization).FirstOrDefaultAsync(p => p.Email == email);
+            return await db.Set<Doctor>().AsNoTracking().Include(d => d.Specialization).FirstOrDefaultAsync(p => p.Email == email);
         }
 
         public async Task<IEnumerable<Doctor>> GetAllBySpecializationAsync(string specialization)
         {
-            return await db.Set<Doctor>().Where(d => d.Specialization.Name == specialization).ToListAsync();
+            return await db.Set<Doctor>().AsNoTracking().Where(d => d.Specialization.Name == specialization).ToListAsync();
         }
         public async Task<IEnumerable<Doctor>> GetAvailableDoctorsAtAsync(DateTime targetTime)
         {
-            // get all doctors who are available and do not have a session at that exact time
-            var doctors = await db.Doctors
-                .Where(d => d.IsAvaible && !db.Sessions
+            // get all doctors who are available and do not have a Appointments at that exact time
+            var doctors = await db.Doctors.AsNoTracking()
+                .Where(d => d.IsAvaible && !db.Appointments
                     .Any(s => s.DoctorId == d.Id && s.Date == targetTime))
                 .ToListAsync();
 
