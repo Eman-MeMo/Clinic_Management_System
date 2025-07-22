@@ -19,11 +19,7 @@ namespace ClinicManagement.API.Controllers
         private readonly UserManager<AppUser> userManager;
         private readonly IMapper mapper;
         private readonly IConfiguration config;
-        private readonly ClinicDbContext db;
-        private readonly IAuditLoggerService auditLogger;
-
-        private string? UserId => User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
+        private readonly ILogger<AccountController> logger;
 
         private readonly string[] allowedRoles = new[] { "Admin", "Doctor", "Patient" };
 
@@ -31,37 +27,45 @@ namespace ClinicManagement.API.Controllers
                                  SignInManager<AppUser> _signInManager,
                                  IMapper _mapper,
                                  IConfiguration _config,
-                                 ClinicDbContext _db,IAuditLoggerService _auditLogger)
+                                 ILogger<AccountController> _logger)
         {
             userManager = _userManager;
             mapper = _mapper;
             config = _config;
-            db = _db;
-            auditLogger = _auditLogger;
+            logger = _logger;
         }
 
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
+            logger.LogInformation("Login attempt for email: {Email}", model.Email);
+
             var user = await userManager.FindByEmailAsync(model.Email);
-                    
             if (user == null || !user.IsActive)
+            {
+                logger.LogWarning("Login failed for email: {Email}. Reason: User not found or inactive.", model.Email);
                 return Unauthorized("Invalid username or password.");
+            }
 
             var isPasswordCorrect = await userManager.CheckPasswordAsync(user, model.Password);
             if (!isPasswordCorrect)
+            {
+                logger.LogWarning("Login failed for email: {Email}. Reason: Incorrect password.", model.Email);
                 return Unauthorized("Invalid username or password.");
+            }
 
             var roles = await userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault();
 
             if (string.IsNullOrEmpty(role) || !allowedRoles.Contains(role))
+            {
+                logger.LogWarning("Login failed for email: {Email}. Reason: Invalid role.", model.Email);
                 return Unauthorized("User does not have a valid role.");
+            }
 
             var token = GenerateJWTAuthentication(user, role);
 
-            //Log the successful login attempt
-            await auditLogger.LogAsync("Login", user.Id, $"User '{user.UserName}' logged in successfully.", UserId);
+            logger.LogInformation("User {Email} logged in successfully with role {Role}.", model.Email, role);
 
             return Ok(new
             {
@@ -73,19 +77,26 @@ namespace ClinicManagement.API.Controllers
         [HttpPost("Patient_Register")]
         public async Task<IActionResult> PatientRegister([FromBody] PatientRegisterDto model)
         {
+            logger.LogInformation("Patient registration attempt for email: {Email}", model.Email);
+
             var patient = mapper.Map<Patient>(model);
             var result = await userManager.CreateAsync(patient, model.Password);
             if (!result.Succeeded)
+            {
+                logger.LogError("Patient registration failed for email: {Email}. Errors: {Errors}", model.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
                 return BadRequest(result.Errors);
+            }
 
             var roleResult = await userManager.AddToRoleAsync(patient, "Patient");
             if (!roleResult.Succeeded)
+            {
+                logger.LogError("Failed to assign Patient role to user: {Email}", model.Email);
                 return BadRequest("Failed to assign Patient role.");
+            }
 
             var token = GenerateJWTAuthentication(patient, "Patient");
 
-            //Log the successful registration
-            await auditLogger.LogAsync("Register", patient.Id, $"New user '{patient.UserName}' registered as Patient.", UserId);
+            logger.LogInformation("Patient registered successfully: {Email}", model.Email);
 
             return Ok(new { message = "Registered successfully", token });
         }
@@ -93,19 +104,26 @@ namespace ClinicManagement.API.Controllers
         [HttpPost("Doctor_Register")]
         public async Task<IActionResult> DoctorRegister([FromBody] DoctorRegisterDto model)
         {
+            logger.LogInformation("Doctor registration attempt for email: {Email}", model.Email);
+
             var doctor = mapper.Map<Doctor>(model);
             var result = await userManager.CreateAsync(doctor, model.Password);
             if (!result.Succeeded)
+            {
+                logger.LogError("Doctor registration failed for email: {Email}. Errors: {Errors}", model.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
                 return BadRequest(result.Errors);
+            }
 
             var roleResult = await userManager.AddToRoleAsync(doctor, "Doctor");
             if (!roleResult.Succeeded)
+            {
+                logger.LogError("Failed to assign Doctor role to user: {Email}", model.Email);
                 return BadRequest("Failed to assign Doctor role.");
+            }
 
             var token = GenerateJWTAuthentication(doctor, "Doctor");
 
-            //Log the successful registration
-            await auditLogger.LogAsync("Register", doctor.Id, $"New user '{doctor.UserName}' registered as Doctor.", UserId);
+            logger.LogInformation("Doctor registered successfully: {Email}", model.Email);
 
             return Ok(new { message = "Registered successfully", token });
         }
@@ -113,19 +131,26 @@ namespace ClinicManagement.API.Controllers
         [HttpPost("Admin_Register")]
         public async Task<IActionResult> AdminRegister([FromBody] AdminRegisterDto model)
         {
+            logger.LogInformation("Admin registration attempt for email: {Email}", model.Email);
+
             var admin = mapper.Map<Admin>(model);
             var result = await userManager.CreateAsync(admin, model.Password);
             if (!result.Succeeded)
+            {
+                logger.LogError("Admin registration failed for email: {Email}. Errors: {Errors}", model.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
                 return BadRequest(result.Errors);
+            }
 
             var roleResult = await userManager.AddToRoleAsync(admin, "Admin");
             if (!roleResult.Succeeded)
+            {
+                logger.LogError("Failed to assign Admin role to user: {Email}", model.Email);
                 return BadRequest("Failed to assign Admin role.");
+            }
 
             var token = GenerateJWTAuthentication(admin, "Admin");
 
-            //Log the successful registration
-            await auditLogger.LogAsync("Register", admin.Id, $"New user '{admin.UserName}' registered as Admin.", UserId);
+            logger.LogInformation("Admin registered successfully: {Email}", model.Email);
 
             return Ok(new { message = "Registered successfully", token });
         }

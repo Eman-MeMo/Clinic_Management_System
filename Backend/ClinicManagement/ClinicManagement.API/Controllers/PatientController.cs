@@ -5,8 +5,8 @@ using ClinicManagement.Domain.DTOs.PatientDTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ClinicManagement.API.Controllers
 {
@@ -16,27 +16,26 @@ namespace ClinicManagement.API.Controllers
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
-        private readonly IAuditLoggerService auditLogger;
-        private string? UserId => User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        private readonly ILogger<PatientController> logger;
 
-        public PatientController(IUnitOfWork _unitOfWork, IMapper _mapper, IAuditLoggerService _auditLogger)
+        public PatientController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<PatientController> _logger)
         {
             unitOfWork = _unitOfWork;
             mapper = _mapper;
-            auditLogger = _auditLogger;
+            logger = _logger;
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAllPatients([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var patients = unitOfWork.PatientRepository.GetAllAsQueryable();
+            logger.LogInformation("Fetching patients: Page {PageNumber}, Size {PageSize}", pageNumber, pageSize);
 
+            var patients = unitOfWork.PatientRepository.GetAllAsQueryable();
             var totalCount = await patients.CountAsync();
             var paginationSkip = (pageNumber - 1) * pageSize;
+            var items = await patients.Skip(paginationSkip).Take(pageSize).ToListAsync();
 
-            var items = await patients
-                .Skip(paginationSkip)
-                .Take(pageSize)
-                .ToListAsync();
+            logger.LogInformation("Fetched {Count} patients.", items.Count);
 
             var result = new PaginatedResultDto<PatientDto>
             {
@@ -52,35 +51,46 @@ namespace ClinicManagement.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPatientById(string id)
         {
+            logger.LogInformation("Fetching patient by ID: {Id}", id);
+
             var patient = await unitOfWork.PatientRepository.GetByIdAsync(id);
             if (patient == null)
             {
+                logger.LogWarning("Patient with ID {Id} not found.", id);
                 return NotFound($"Patient with ID {id} not found.");
             }
-            var patientDto = mapper.Map<PatientDto>(patient);
-            return Ok(patientDto);
+
+            return Ok(mapper.Map<PatientDto>(patient));
         }
+
         [HttpGet("NationalId/{nationalId}")]
         public async Task<IActionResult> GetPatientByNationalId(string nationalId)
         {
+            logger.LogInformation("Fetching patient by National ID: {NationalId}", nationalId);
+
             var patient = await unitOfWork.PatientRepository.GetByNationalIdAsync(nationalId);
             if (patient == null)
             {
+                logger.LogWarning("Patient with National ID {NationalId} not found.", nationalId);
                 return NotFound($"Patient with National ID {nationalId} not found.");
             }
-            var patientDto = mapper.Map<PatientDto>(patient);
-            return Ok(patientDto);
+
+            return Ok(mapper.Map<PatientDto>(patient));
         }
+
         [HttpGet("Email/{email}")]
         public async Task<IActionResult> GetPatientByEmail(string email)
         {
+            logger.LogInformation("Fetching patient by email: {Email}", email);
+
             var patient = await unitOfWork.PatientRepository.GetByEmailAsync(email);
             if (patient == null)
             {
+                logger.LogWarning("Patient with Email {Email} not found.", email);
                 return NotFound($"Patient with Email {email} not found.");
             }
-            var patientDto = mapper.Map<PatientDto>(patient);
-            return Ok(patientDto);
+
+            return Ok(mapper.Map<PatientDto>(patient));
         }
 
         [HttpPut("{id}")]
@@ -88,50 +98,65 @@ namespace ClinicManagement.API.Controllers
         {
             if (patientDto == null || string.IsNullOrEmpty(patientDto.Id))
             {
+                logger.LogWarning("Invalid patient data for update.");
                 return BadRequest("Invalid patient data.");
             }
+
+            logger.LogInformation("Updating patient with ID: {Id}", patientDto.Id);
+
             var patient = await unitOfWork.PatientRepository.GetByIdAsync(patientDto.Id);
             if (patient == null)
             {
+                logger.LogWarning("Patient with ID {Id} not found for update.", patientDto.Id);
                 return NotFound($"Patient with ID {patientDto.Id} not found.");
             }
+
             mapper.Map(patientDto, patient);
             unitOfWork.PatientRepository.Update(patient);
             await unitOfWork.SaveChangesAsync();
 
-            // Log the update action
-            await auditLogger.LogAsync("Update", "Patients", $"Updated patient with ID {patientDto.Id}", UserId);
+            logger.LogInformation("Patient with ID {Id} updated successfully.", patientDto.Id);
 
             return NoContent();
         }
+
         [HttpPut("deactivate/{id}")]
         public async Task<IActionResult> DeactivatePatient(string id)
         {
+            logger.LogInformation("Deactivating patient with ID: {Id}", id);
+
             var patient = await unitOfWork.PatientRepository.GetByIdAsync(id);
             if (patient == null)
             {
+                logger.LogWarning("Patient with ID {Id} not found for deactivation.", id);
                 return NotFound($"Patient with ID {id} not found.");
             }
+
             await unitOfWork.PatientRepository.DeactivateUserAsync(id);
             await unitOfWork.SaveChangesAsync();
 
-            // Log the deactivation action
-            await auditLogger.LogAsync("Deactivate", "Patients", $"Deactivated patient with ID {id}", UserId);
+            logger.LogInformation("Patient with ID {Id} deactivated successfully.", id);
+
             return NoContent();
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePatient(string id)
         {
+            logger.LogInformation("Deleting patient with ID: {Id}", id);
+
             var patient = await unitOfWork.PatientRepository.GetByIdAsync(id);
             if (patient == null)
             {
+                logger.LogWarning("Patient with ID {Id} not found for deletion.", id);
                 return NotFound($"Patient with ID {id} not found.");
             }
+
             unitOfWork.PatientRepository.Delete(patient);
             await unitOfWork.SaveChangesAsync();
 
-            // Log the deletion action
-            await auditLogger.LogAsync("Delete", "Patients", $"Deleted patient with ID {id}", UserId);
+            logger.LogInformation("Patient with ID {Id} deleted successfully.", id);
+
             return NoContent();
         }
     }

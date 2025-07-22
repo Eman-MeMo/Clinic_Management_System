@@ -47,7 +47,6 @@ namespace ClinicManagement.Infrastructure.Data
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<AppUser> AppUsers { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
-        public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<Bill> Bills { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<MedicalRecord> MedicalRecords { get; set; }

@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ClinicManagement.Infrastructure.Repositories;
 using ClinicManagement.Application.Interfaces;
+using Serilog;
+using Serilog.Formatting.Compact;
 
 namespace ClinicManagement.API
 {
@@ -16,6 +18,11 @@ namespace ClinicManagement.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Configure Serilog for logging from appsettings.json
+            Log.Logger = new LoggerConfiguration()
+                    .ReadFrom.Configuration(builder.Configuration)
+                    .CreateLogger();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -90,11 +97,11 @@ namespace ClinicManagement.API
                 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
                 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-                // Services
-                builder.Services.AddScoped<IAuditLoggerService, AuditLoggerService>();
-
                 // Unit of Work
                 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // Configure Serilog as the logging provider
+            builder.Host.UseSerilog();
 
             var app = builder.Build();
 

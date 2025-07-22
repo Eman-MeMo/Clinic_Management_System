@@ -6,6 +6,7 @@ using ClinicManagement.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 namespace ClinicManagement.API.Controllers
@@ -16,25 +17,23 @@ namespace ClinicManagement.API.Controllers
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
-        private readonly IAuditLoggerService auditLogger;
-        private string? UserId => User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        private readonly ILogger<MedicalRecordController> logger;
 
-        public MedicalRecordController(IUnitOfWork _unitOfWork, IMapper _mapper, IAuditLoggerService _auditLogger)
+        public MedicalRecordController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<MedicalRecordController> _logger)
         {
             unitOfWork = _unitOfWork;
             mapper = _mapper;
-            auditLogger = _auditLogger;
+            logger = _logger;
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAllMedicalRecords([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var records =  unitOfWork.MedicalRecordRepository.GetAllAsQueryable();
+            logger.LogInformation("Fetching all medical records with pagination: Page {PageNumber}, Size {PageSize}", pageNumber, pageSize);
+            var records = unitOfWork.MedicalRecordRepository.GetAllAsQueryable();
             var totalCount = await records.CountAsync();
             var paginationSkip = (pageNumber - 1) * pageSize;
-            var items = await records
-                .Skip(paginationSkip)
-                .Take(pageSize)
-                .ToListAsync();
+            var items = await records.Skip(paginationSkip).Take(pageSize).ToListAsync();
 
             var medicalRecordDtos = mapper.Map<List<MedicalRecordDto>>(items);
             var result = new PaginatedResultDto<MedicalRecordDto>
@@ -44,111 +43,140 @@ namespace ClinicManagement.API.Controllers
                 PageSize = pageSize,
                 Items = medicalRecordDtos
             };
+            logger.LogInformation("Returned {Count} medical records", items.Count);
             return Ok(result);
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMedicalRecordById(int id)
         {
+            logger.LogInformation("Fetching medical record with ID {Id}", id);
             var record = await unitOfWork.MedicalRecordRepository.GetByIdAsync(id);
             if (record == null)
             {
+                logger.LogWarning("Medical record with ID {Id} not found", id);
                 return NotFound("Medical record not found.");
             }
             var mappedRecord = mapper.Map<MedicalRecordDto>(record);
+            logger.LogInformation("Medical record with ID {Id} retrieved successfully", id);
             return Ok(mappedRecord);
         }
+
         [HttpPost]
         public async Task<IActionResult> CreateMedicalRecord([FromBody] CreateMedicalRecordDto medicalRecordDto)
         {
             if (medicalRecordDto == null)
             {
+                logger.LogWarning("Attempted to create a medical record with null data");
                 return BadRequest("Medical record data cannot be null.");
             }
+
             var newRecord = mapper.Map<MedicalRecord>(medicalRecordDto);
             await unitOfWork.MedicalRecordRepository.AddAsync(newRecord);
             await unitOfWork.SaveChangesAsync();
-
-            // Log the creation of the medical record
-            await auditLogger.LogAsync("Create", "MedicalRecords", $"Created record for patient {newRecord.PatientId}", UserId);
+            logger.LogInformation("Created new medical record with ID {Id}", newRecord.Id);
             return CreatedAtAction(nameof(GetMedicalRecordById), new { id = newRecord.Id }, medicalRecordDto);
         }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMedicalRecord(int id, [FromBody] MedicalRecordDto medicalRecordDto)
         {
             if (id != medicalRecordDto.Id)
             {
+                logger.LogWarning("Medical record ID mismatch: Route ID {RouteId}, Body ID {BodyId}", id, medicalRecordDto.Id);
                 return BadRequest("Medical record ID mismatch.");
             }
+
             var existingRecord = await unitOfWork.MedicalRecordRepository.GetByIdAsync(id);
             if (existingRecord == null)
             {
+                logger.LogWarning("Medical record with ID {Id} not found for update", id);
                 return NotFound("Medical record not found.");
             }
+
             var updatedRecord = mapper.Map(medicalRecordDto, existingRecord);
             unitOfWork.MedicalRecordRepository.Update(updatedRecord);
             await unitOfWork.SaveChangesAsync();
-
-            // Log the update of the medical record
-            await auditLogger.LogAsync("Update", "MedicalRecords", $"Updated record for patient {updatedRecord.PatientId}", UserId);
+            logger.LogInformation("Updated medical record with ID {Id}", id);
             return NoContent();
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMedicalRecord(int id)
         {
+            logger.LogInformation("Attempting to delete medical record with ID {Id}", id);
             var record = await unitOfWork.MedicalRecordRepository.GetByIdAsync(id);
             if (record == null)
             {
+                logger.LogWarning("Medical record with ID {Id} not found for deletion", id);
                 return NotFound("Medical record not found.");
             }
+
             unitOfWork.MedicalRecordRepository.Delete(record);
             await unitOfWork.SaveChangesAsync();
-
-            // Log the deletion of the medical record
-            await auditLogger.LogAsync("Delete", "MedicalRecords", $"Deleted record for patient {record.PatientId}", UserId);
+            logger.LogInformation("Deleted medical record with ID {Id}", id);
             return NoContent();
         }
+
         [HttpGet("patient/{patientId}")]
         public async Task<IActionResult> GetMedicalRecordsByPatientId(string patientId)
         {
             if (string.IsNullOrWhiteSpace(patientId))
             {
+                logger.LogWarning("Patient ID is null or empty in GetMedicalRecordsByPatientId");
                 return BadRequest("Patient ID cannot be null or empty.");
             }
+
             var records = await unitOfWork.MedicalRecordRepository.GetByPatientIdAsync(patientId);
             if (records == null || !records.Any())
             {
+                logger.LogInformation("No medical records found for patient ID {PatientId}", patientId);
                 return NotFound("No medical records found for this patient.");
             }
+
+            logger.LogInformation("Fetched {Count} medical records for patient ID {PatientId}", records.Count(), patientId);
             var mappedRecords = mapper.Map<IEnumerable<MedicalRecordDto>>(records);
             return Ok(mappedRecords);
         }
+
         [HttpGet("patient/{patientId}/latest")]
         public async Task<IActionResult> GetLatestMedicalRecordByPatientId(string patientId)
         {
             if (string.IsNullOrWhiteSpace(patientId))
             {
+                logger.LogWarning("Patient ID is null or empty in GetLatestMedicalRecordByPatientId");
                 return BadRequest("Patient ID cannot be null or empty.");
             }
+
             var record = await unitOfWork.MedicalRecordRepository.GetLatestRecordAsync(patientId);
             if (record == null)
             {
+                logger.LogInformation("No latest medical record found for patient ID {PatientId}", patientId);
                 return NotFound("No medical records found for this patient.");
             }
+
+            logger.LogInformation("Fetched latest medical record with ID {Id} for patient ID {PatientId}", record.Id, patientId);
             var mappedRecord = mapper.Map<MedicalRecordDto>(record);
             return Ok(mappedRecord);
         }
+
         [HttpGet("date/{date}")]
         public async Task<IActionResult> GetMedicalRecordsByDate(DateTime date)
         {
             if (date > DateTime.Now)
             {
+                logger.LogWarning("Attempted to fetch medical records for future date {Date}", date);
                 return BadRequest("Date cannot be in the future.");
             }
+
             var records = await unitOfWork.MedicalRecordRepository.GetByDateAsync(date);
             if (records == null || !records.Any())
             {
+                logger.LogInformation("No medical records found on date {Date}", date);
                 return NotFound("No medical records found for this date.");
             }
+
+            logger.LogInformation("Fetched {Count} medical records on date {Date}", records.Count(), date);
             var mappedRecords = mapper.Map<IEnumerable<MedicalRecordDto>>(records);
             return Ok(mappedRecords);
         }

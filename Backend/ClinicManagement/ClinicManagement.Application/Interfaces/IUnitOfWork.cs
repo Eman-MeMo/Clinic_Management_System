@@ -14,14 +14,12 @@ namespace ClinicManagement.Application.Interfaces
         IUserRepository<Admin> AdminRepository { get; }
         IAppointmentRepository AppointmentRepository { get; }
         IAttendanceRepository AttendanceRepository { get; }
-        IGenericRepository<AuditLog> AuditLogRepository { get; }
         IBillRepository BillRepository { get; }
         IMedicalRecordRepository MedicalRecordRepository { get; }
         IPaymentRepository PaymentRepository { get; }
         IPrescriptionRepository PrescriptionRepository { get; }
         IGenericRepository<Service> ServiceRepository { get; }
         ISessionRepository SessionRepository { get; }
-
         ISessionServiceRepository SessionServiceRepository { get; }
         IGenericRepository<Specialization> SpecializationRepository { get; }
         IWorkScheduleRepository WorkScheduleRepository { get; }

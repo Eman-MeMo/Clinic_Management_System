@@ -18,7 +18,6 @@ namespace ClinicManagement.Infrastructure.Repositories
         private IUserRepository<Admin> AdminRepo;
         private IAppointmentRepository AppointmentRepo;
         private IAttendanceRepository AttendanceRepo;
-        private IGenericRepository<AuditLog> AuditLogRepo;
         private IBillRepository BillRepo;
         private IMedicalRecordRepository MedicalRecordRepo;
         private IPaymentRepository PaymentRepo;
@@ -79,17 +78,6 @@ namespace ClinicManagement.Infrastructure.Repositories
                 return AttendanceRepo;
             }
         }
-
-        public IGenericRepository<AuditLog> AuditLogRepository
-        {
-            get
-            {
-                if (AuditLogRepo == null)
-                    AuditLogRepo = new GenericRepository<AuditLog>(db);
-                return AuditLogRepo;
-            }
-        }
-
         public IBillRepository BillRepository {
             get
             {
