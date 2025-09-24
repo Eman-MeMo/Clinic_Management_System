@@ -13,6 +13,5 @@ namespace ClinicManagement.Application.Interfaces
         Task<IEnumerable<Prescription>> GetByPatientIdAsync(string patientId);
         Task<IEnumerable<Prescription>> GetBySessionIdAsync(int sessionId);
         Task<IEnumerable<Prescription>> GetByDoctorIdAsync(string doctorId);
-        Task CreateMedicalRecoredAsync(string? Notes,string Diagnosis, int prescriptionId);
     }
 }

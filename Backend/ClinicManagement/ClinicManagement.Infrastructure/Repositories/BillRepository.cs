@@ -19,24 +19,6 @@ namespace ClinicManagement.Infrastructure.Repositories
                 .Where(b => b.PatientId == patientId && !b.IsPaid)
                 .ToListAsync();
         }
-        public async Task<bool> MarkAsPaidAsync(int billId)
-        {
-            var bill = await db.Bills.FindAsync(billId);
-            if (bill == null || bill.IsPaid)
-                return false;
-
-            var payment = await db.Payments.FirstOrDefaultAsync(p => p.BillId == billId);
-
-            if (payment == null || payment.Amount != bill.Amount)
-            {
-                return false;
-            }
-
-            bill.IsPaid = true;
-            await db.SaveChangesAsync();
-            return true;
-        }
-
         public async Task<IEnumerable<Bill>> GetBySessionAsync(int sessionId)
         {
             return await db.Bills.AsNoTracking()

@@ -10,6 +10,5 @@ namespace ClinicManagement.Application.Interfaces
     public interface IDoctorRepository:IUserRepository<Doctor>
     {
         Task<IEnumerable<Doctor>> GetAllBySpecializationAsync(string specialization);
-        Task<IEnumerable<Doctor>> GetAvailableDoctorsAtAsync(DateTime targetTime);
     }
 }

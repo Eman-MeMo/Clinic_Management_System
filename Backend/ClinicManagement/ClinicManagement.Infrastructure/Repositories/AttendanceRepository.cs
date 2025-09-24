@@ -57,28 +57,5 @@ namespace ClinicManagement.Infrastructure.Repositories
         {
             return await db.Attendances.AsNoTracking().FirstOrDefaultAsync(a => a.SessionId == sessionId);
         }
-
-
-        public async Task<AttendanceSummaryDto> GetDailySummaryReportAsync(DateTime date)
-        {
-            var attendancesOnDate = await db.Attendances.AsNoTracking()
-                .Include(a => a.Session)
-                .ThenInclude(s => s.Appointment)
-                .Where(a => a.Session.Appointment.Date.Date == date.Date)
-                .ToListAsync();
-
-            var presentCount = attendancesOnDate.Count(a => a.IsPresent);
-            var absentCount = attendancesOnDate.Count(a => !a.IsPresent);
-            var totalPatients = attendancesOnDate.Count;
-
-            var summary = new AttendanceSummaryDto
-            {
-                Date = date,
-                TotalPatients = totalPatients,
-                PresentCount = presentCount,
-                AbsentCount = absentCount
-            };
-            return summary;
-        }
     }
 }

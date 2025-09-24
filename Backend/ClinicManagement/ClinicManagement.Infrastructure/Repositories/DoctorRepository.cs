@@ -33,15 +33,5 @@ namespace ClinicManagement.Infrastructure.Repositories
         {
             return await db.Set<Doctor>().AsNoTracking().Where(d => d.Specialization.Name == specialization).ToListAsync();
         }
-        public async Task<IEnumerable<Doctor>> GetAvailableDoctorsAtAsync(DateTime targetTime)
-        {
-            // get all doctors who are available and do not have a Appointments at that exact time
-            var doctors = await db.Doctors.AsNoTracking()
-                .Where(d => d.IsAvaible && !db.Appointments
-                    .Any(s => s.DoctorId == d.Id && s.Date == targetTime))
-                .ToListAsync();
-
-            return doctors;
-        }
     }
 }

@@ -11,7 +11,6 @@ namespace ClinicManagement.Application.Interfaces
     public interface ISessionRepository : IGenericRepository<Session>
     {
         Task<int> CreateSessionAsync(int appointmentId);
-        Task EndSession(int sessionId, SessionStatus status);
         Task<IEnumerable<Session>> GetSessionsByDoctor(string doctorId);
         IQueryable<Session> GetSessionsByDoctorAsAsQueryable(string doctorId);
         IQueryable<Session> GetSessionsByPatientAsQueryable(string patientId);

@@ -28,6 +28,11 @@ namespace ClinicManagement.Infrastructure.Repositories
                 .Where(p => p.Bill.PatientId == patientId)
                 .ToListAsync();
         }
+        public async Task<Payment> GetByBillIdAsync(int billId)
+        {
+            return await db.Payments
+                .FirstOrDefaultAsync(p => p.BillId == billId);
+        }
 
         public async Task<bool> GetStatusAsync(int billId)
         {

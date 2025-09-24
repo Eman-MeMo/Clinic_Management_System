@@ -29,28 +29,6 @@ namespace ClinicManagement.Infrastructure.Repositories
             }
         }
 
-        public async Task EndSession(int sessionId,SessionStatus status)
-        {
-            var session = await db.Set<Session>().FirstOrDefaultAsync(s => s.Id == sessionId);
-            if (session != null)
-            {
-                session.Status = status;
-                session.ActualEndTime = DateTime.Now;
-
-                // Update related appointment
-                var appointment = await db.Set<Appointment>()
-                    .FirstOrDefaultAsync(a => a.Id == session.AppointmentId);
-                if (appointment != null)
-                {
-                    appointment.Status = status == SessionStatus.Done
-                                         ? AppointmentStatus.Confirmed
-                                         : AppointmentStatus.Cancelled;
-                }
-
-                await db.SaveChangesAsync(); 
-            }
-        }
-
         public async Task<IEnumerable<Session>> GetSessionsByDoctor(string doctorId)
         {
             return await db.Set<Session>().AsNoTracking()

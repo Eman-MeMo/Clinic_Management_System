@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ClinicManagement.Infrastructure.Repositories
 {
@@ -27,14 +28,23 @@ namespace ClinicManagement.Infrastructure.Repositories
         {
             return await db.Appointments.AsNoTracking().Where(p => p.PatientId == pateintId).ToListAsync();
         }
-        public async Task<bool> UpdateAppointmentStatusAsync(int appointmentId, AppointmentStatus status)
+        public async Task<bool> HasAppointmentForDoctorAtAsync(string doctorId, DateTime date, int? appointmentIdToExclude = null)
+        {
+            return await db.Appointments
+            .AnyAsync(a =>
+                    a.DoctorId == doctorId &&
+                    a.Date == date &&
+                    (appointmentIdToExclude == null || a.Id != appointmentIdToExclude)
+                );
+        }
+        public async Task UpdateAppointmentStatusAsync(int appointmentId, AppointmentStatus status)
         {
             var appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId);
-            if (appointment == null) return false;
+            if (appointment == null)
+                throw new KeyNotFoundException($"Appointment with ID {appointmentId} not found.");
 
             appointment.Status = status;
             await db.SaveChangesAsync();
-            return true;
         }
     }
 }

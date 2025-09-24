@@ -14,6 +14,5 @@ namespace ClinicManagement.Application.Interfaces
         Task<IEnumerable<Attendance>> GetByDateAsync(DateTime date);
         Task<Attendance> GetByPatientIdAndDateAsync(string patientId, DateTime date);
         Task<IEnumerable<Patient>> GetAbsentPatientsByDateAsync(DateTime date);
-        Task<AttendanceSummaryDto> GetDailySummaryReportAsync(DateTime date);
     }
 }

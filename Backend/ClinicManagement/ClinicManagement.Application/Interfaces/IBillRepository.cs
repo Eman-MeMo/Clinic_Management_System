@@ -10,7 +10,6 @@ namespace ClinicManagement.Application.Interfaces
     public interface IBillRepository:IGenericRepository<Bill>
     {
         Task<IEnumerable<Bill>> GetUnpaidBillsByPatientAsync(string patientId);
-        Task<bool> MarkAsPaidAsync(int billId);
         Task<IEnumerable<Bill>> GetBySessionAsync(int sessionId);
     }
 }
