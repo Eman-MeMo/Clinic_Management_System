@@ -27,33 +27,6 @@ namespace ClinicManagement.Infrastructure.Repositories
         {
             return await db.Appointments.AsNoTracking().Where(p => p.PatientId == pateintId).ToListAsync();
         }
-        public async Task<bool> IsDoctorAvailableAsync(string doctorId, DateTime date, int? appointmentIdToExclude = null)
-        {
-            // Check if the doctor exists
-            var workSchedule = await db.WorkSchedules.AsNoTracking()
-                .FirstOrDefaultAsync(ws =>
-                    ws.DoctorId == doctorId &&
-                    ws.IsAvailable == true &&
-                    ws.DayOfWeek == date.DayOfWeek &&
-                    TimeOnly.FromDateTime(date) >= TimeOnly.FromDateTime(ws.StartTime) &&
-                    TimeOnly.FromDateTime(date) <= TimeOnly.FromDateTime(ws.EndTime)
-                );
-
-            if (workSchedule == null)
-            {
-                return false; // Doctor is not available on this day or time
-            }
-
-            // Check for appointment conflicts
-            var hasConflict = await db.Appointments
-                .AnyAsync(a =>
-                    a.DoctorId == doctorId &&
-                    a.Date == date &&
-                    (appointmentIdToExclude == null || a.Id != appointmentIdToExclude) // Exclude the current appointment if provided
-                );
-
-            return !hasConflict;
-        }
         public async Task<bool> UpdateAppointmentStatusAsync(int appointmentId, AppointmentStatus status)
         {
             var appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId);
