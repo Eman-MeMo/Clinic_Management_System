@@ -13,6 +13,5 @@ namespace ClinicManagement.Application.Interfaces
         Task<IEnumerable<Appointment>> GetAllByDoctorIdAsync(string doctorId);
         Task<bool> HasAppointmentForDoctorAtAsync(string doctorId, DateTime date, int? appointmentIdToExclude = null);
         Task<IEnumerable<Appointment>> GetAllByPatientIdAsync(string pateintId);
-        Task UpdateAppointmentStatusAsync(int appointmentId, AppointmentStatus status);
     }
 }

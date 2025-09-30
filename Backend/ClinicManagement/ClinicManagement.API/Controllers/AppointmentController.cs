@@ -1,8 +1,12 @@
 ﻿using AutoMapper;
+using ClinicManagement.Application.Commands.Appointments.BookAppointment;
+using ClinicManagement.Application.Commands.Appointments.CancelAppointment;
+using ClinicManagement.Application.Commands.Appointments.UpdateAppointment;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.DTOs.AppointmentDTOs;
 using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -16,12 +20,14 @@ namespace ClinicManagement.API.Controllers
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
         private readonly ILogger<AppointmentController> logger;
+        private readonly IMediator mediator;
 
-        public AppointmentController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<AppointmentController> _logger)
+        public AppointmentController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<AppointmentController> _logger, IMediator _mediator)
         {
             unitOfWork = _unitOfWork;
             mapper = _mapper;
             logger = _logger;
+            mediator = _mediator;
         }
 
         [HttpGet]
@@ -99,29 +105,21 @@ namespace ClinicManagement.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAppointment([FromBody] CreateAppointmentDto appointmentDto)
+        public async Task<IActionResult> CreateAppointment([FromBody] BookAppointmentCommand command)
         {
-            if (appointmentDto == null)
+            if (command == null)
             {
                 logger.LogWarning("CreateAppointment called with null data.");
                 return BadRequest("Appointment data is null.");
             }
 
-            logger.LogInformation("Creating appointment for DoctorID {DoctorId} on {Date}", appointmentDto.DoctorId, appointmentDto.Date);
+            logger.LogInformation("Creating appointment for DoctorID {DoctorId} on {Date}", command.DoctorId, command.Date);
 
-            var isDoctorAvailable = await unitOfWork.AppointmentRepository.IsDoctorAvailableAsync(appointmentDto.DoctorId, appointmentDto.Date);
-            if (!isDoctorAvailable)
-            {
-                logger.LogWarning("Doctor with ID {DoctorId} is not available on {Date}", appointmentDto.DoctorId, appointmentDto.Date);
-                return BadRequest("The doctor is not available at the requested time.");
-            }
+            var appointmentId = await mediator.Send(command);
 
-            var appointment = mapper.Map<Domain.Entities.Appointment>(appointmentDto);
-            await unitOfWork.AppointmentRepository.AddAsync(appointment);
-            await unitOfWork.SaveChangesAsync();
+            logger.LogInformation("Appointment with ID {AppointmentId} created successfully", appointmentId);
 
-            logger.LogInformation("Appointment with ID {AppointmentId} created successfully", appointment.Id);
-            return CreatedAtAction(nameof(GetAppointmentById), new { id = appointment.Id }, mapper.Map<AppointmentDto>(appointment));
+            return CreatedAtAction(nameof(GetAppointmentById), new { id = appointmentId }, appointmentId);
         }
 
         [HttpPut("cancel-appointment/{appointmentId}")]
@@ -135,54 +133,24 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Invalid appointment ID.");
             }
 
-            var appointment = await unitOfWork.AppointmentRepository.GetByIdAsync(appointmentId);
-            if (appointment == null)
-            {
-                logger.LogWarning("Appointment with ID {AppointmentId} not found for cancellation", appointmentId);
-                return NotFound("Appointment not found.");
-            }
-
-            bool hasSession = await unitOfWork.SessionRepository.HasSessionForAppointmentAsync(appointmentId);
-            if (hasSession)
-            {
-                logger.LogWarning("Cannot cancel appointment with ID {AppointmentId} as it already has an associated session", appointmentId);
-                return BadRequest("Cannot cancel appointment. A session has already been started for this appointment.");
-            }
-
-            await unitOfWork.AppointmentRepository.UpdateAppointmentStatusAsync(appointmentId, AppointmentStatus.Cancelled);
+            await mediator.Send(new CancelAppointmentCommand { Id = appointmentId });
             logger.LogInformation("Appointment with ID {AppointmentId} was cancelled successfully", appointmentId);
 
             return Ok("Appointment canceled successfully.");
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateAppointment(int id, [FromBody] AppointmentDto appointmentDto)
+        public async Task<IActionResult> UpdateAppointment(int id, [FromBody] UpdateAppointmentCommand command)
         {
+            if (command == null || id != command.Id)
+            {
+                logger.LogWarning("UpdateAppointment called with invalid data for ID {AppointmentId}", id);
+                return BadRequest("Invalid appointment data.");
+            }
+
             logger.LogInformation("Updating appointment with ID {AppointmentId}", id);
 
-            if (appointmentDto == null)
-            {
-                logger.LogWarning("UpdateAppointment called with null data for ID {AppointmentId}", id);
-                return BadRequest("Appointment data is null.");
-            }
-
-            var existingAppointment = await unitOfWork.AppointmentRepository.GetByIdAsync(id);
-            if (existingAppointment == null)
-            {
-                logger.LogWarning("Appointment with ID {AppointmentId} not found for update", id);
-                return NotFound($"Appointment with ID {id} not found.");
-            }
-
-            var isDoctorAvailable = await unitOfWork.AppointmentRepository.IsDoctorAvailableAsync(appointmentDto.DoctorId, appointmentDto.Date, id);
-            if (!isDoctorAvailable)
-            {
-                logger.LogWarning("Doctor with ID {DoctorId} is not available on {Date} for appointment ID {AppointmentId}", appointmentDto.DoctorId, appointmentDto.Date, id);
-                return BadRequest("The doctor is not available at the requested time.");
-            }
-
-            mapper.Map(appointmentDto, existingAppointment);
-            unitOfWork.AppointmentRepository.Update(existingAppointment);
-            await unitOfWork.SaveChangesAsync();
+            await mediator.Send(command);
 
             logger.LogInformation("Appointment with ID {AppointmentId} updated successfully", id);
             return NoContent();

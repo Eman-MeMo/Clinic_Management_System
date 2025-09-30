@@ -10,6 +10,11 @@ using ClinicManagement.Infrastructure.Repositories;
 using ClinicManagement.Application.Interfaces;
 using Serilog;
 using Serilog.Formatting.Compact;
+using ClinicManagement.Application.Commands.Appointments.UpdateAppointmentStatus;
+using ClinicManagement.Application.Behaviors;
+using MediatR;
+using ClinicManagement.Application.Commands.Appointments.BookAppointment;
+using FluentValidation;
 
 namespace ClinicManagement.API
 {
@@ -44,6 +49,14 @@ namespace ClinicManagement.API
 
             // AutoMapper
             builder.Services.AddMappingProfiles();
+
+            // MediatR
+            builder.Services.AddMediatR(cfg =>
+                cfg.RegisterServicesFromAssembly(typeof(BookAppointmentCommand).Assembly));
+
+            // FluentValidation
+            builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
             // JWT Authentication
             builder.Services.AddAuthentication(options =>

@@ -37,14 +37,5 @@ namespace ClinicManagement.Infrastructure.Repositories
                     (appointmentIdToExclude == null || a.Id != appointmentIdToExclude)
                 );
         }
-        public async Task UpdateAppointmentStatusAsync(int appointmentId, AppointmentStatus status)
-        {
-            var appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId);
-            if (appointment == null)
-                throw new KeyNotFoundException($"Appointment with ID {appointmentId} not found.");
-
-            appointment.Status = status;
-            await db.SaveChangesAsync();
-        }
     }
 }
