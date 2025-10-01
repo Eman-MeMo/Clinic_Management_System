@@ -9,8 +9,7 @@ namespace ClinicManagement.Domain.Enums
     public enum SessionStatus
     {
         Scheduled,
-        Done,
+        Confirmed,
         Cancelled,
-        NoShow, // Patient did not show up for the session
     }
 }

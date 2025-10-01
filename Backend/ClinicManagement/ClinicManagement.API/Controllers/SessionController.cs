@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
+using ClinicManagement.Application.Commands.Sessions.EndSession;
+using ClinicManagement.Application.Commands.Sessions.StartSession;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.DTOs.AttendanceDTOs;
 using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.DTOs.SessionDTOs;
 using ClinicManagement.Domain.Entities;
 using ClinicManagement.Domain.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +22,15 @@ namespace ClinicManagement.API.Controllers
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
         private readonly ILogger<SessionController> logger;
+        private readonly IMediator mediator;
 
-        public SessionController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<SessionController> _logger)
+
+        public SessionController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<SessionController> _logger, IMediator _mediator)
         {
             unitOfWork = _unitOfWork;
             mapper = _mapper;
             logger = _logger;
+            mediator = _mediator;
         }
 
         [HttpGet("doctor/{doctorId}")]
@@ -124,35 +130,7 @@ namespace ClinicManagement.API.Controllers
                 logger.LogWarning("Invalid appointment ID: {AppointmentId}", appointmentId);
                 return BadRequest("Appointment ID invalid");
             }
-
-            var appointment = await unitOfWork.AppointmentRepository.GetByIdAsync(appointmentId);
-            if (appointment == null)
-            {
-                logger.LogWarning("Appointment not found: {AppointmentId}", appointmentId);
-                return NotFound("Appointment not found.");
-            }
-
-            var result = await unitOfWork.SessionRepository.HasSessionForAppointmentAsync(appointmentId);
-            if (result)
-            {
-                logger.LogWarning("Session already exists for appointment ID: {AppointmentId}", appointmentId);
-                return BadRequest($"A session already exists for appointment ID {appointmentId}.");
-            }
-
-            var allowedStartTime = appointment.Date.AddMinutes(-10);
-            if (DateTime.Now < allowedStartTime)
-            {
-                logger.LogWarning("Attempt to start session before allowed time for appointment ID: {AppointmentId}", appointmentId);
-                return BadRequest("Cannot start session before the scheduled time.");
-            }
-
-            if (appointment.Status != AppointmentStatus.Confirmed)
-            {
-                logger.LogWarning("Appointment {AppointmentId} not confirmed. Status: {Status}", appointmentId, appointment.Status);
-                return BadRequest("Appointment must be confirmed before starting a session.");
-            }
-
-            var sessionId = await unitOfWork.SessionRepository.CreateSessionAsync(appointmentId);
+            var sessionId = await mediator.Send(new StartSessionCommand { AppointmentId = appointmentId });
             logger.LogInformation("Session started successfully for appointment ID {AppointmentId}. Session ID: {SessionId}", appointmentId, sessionId);
 
             return CreatedAtAction(nameof(GetSessionById), new { id = sessionId }, $"Session started for appointment ID {appointmentId} with id {sessionId}.");
@@ -169,21 +147,15 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Invalid session ID.");
             }
 
-            var session = await unitOfWork.SessionRepository.GetByIdAsync(sessionId);
-            if (session == null)
+            if (!Enum.TryParse<SessionStatus>(status, true, out var parsedStatus))
             {
-                logger.LogWarning("Session not found: {SessionId}", sessionId);
-                return NotFound("Session not found.");
+                logger.LogWarning("Invalid session status value: {Status}", status);
+                return BadRequest("Invalid status value.");
             }
 
-            if (!Enum.TryParse<SessionStatus>(status, true, out var sessionStatus))
-            {
-                logger.LogWarning("Invalid session status received: {Status}", status);
-                return BadRequest("Invalid session status. Allowed: Completed or Canceled.");
-            }
+            await mediator.Send(new EndSessionCommand { SessionId = sessionId, Status = parsedStatus });
 
-            await unitOfWork.SessionRepository.EndSession(sessionId, sessionStatus);
-            logger.LogInformation("Session ID {SessionId} ended with status: {Status}", sessionId, sessionStatus);
+            logger.LogInformation("Session ID {SessionId} ended with status: {Status}", sessionId, status);
 
             return Ok($"Session ended with status {status}.");
         }

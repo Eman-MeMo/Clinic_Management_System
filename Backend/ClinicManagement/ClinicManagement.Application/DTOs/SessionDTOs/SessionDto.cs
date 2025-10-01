@@ -16,7 +16,7 @@ namespace ClinicManagement.Domain.DTOs.SessionDTOs
         public DateTime? ActualStartTime { get; set; }
         public DateTime? ActualEndTime { get; set; }
         [EnumDataType(typeof(SessionStatus))]
-        public SessionStatus Status { get; set; } = SessionStatus.NoShow;
+        public SessionStatus Status { get; set; } 
         public string? Notes { get; set; }
 
         [Required(ErrorMessage = "Doctor ID is required.")]

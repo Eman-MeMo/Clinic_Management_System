@@ -8,6 +8,7 @@ using FluentValidation;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ClinicManagement.Domain.Enums;
 
 namespace ClinicManagement.Application.Commands.Appointments.BookAppointment
 {
@@ -16,7 +17,7 @@ namespace ClinicManagement.Application.Commands.Appointments.BookAppointment
         private readonly IUnitOfWork unitOfWork;
         private readonly IDoctorAvailabilityService doctorAvailabilityService;
         private readonly IMapper mapper;
-        public BookAppointmentHandler(IUnitOfWork _unitOfWork,IDoctorAvailabilityService _doctorAvailabilityService IMapper mapper)
+        public BookAppointmentHandler(IUnitOfWork _unitOfWork,IDoctorAvailabilityService _doctorAvailabilityService ,IMapper mapper)
         {
             unitOfWork = _unitOfWork;
             doctorAvailabilityService = _doctorAvailabilityService;
@@ -32,6 +33,7 @@ namespace ClinicManagement.Application.Commands.Appointments.BookAppointment
                 throw new InvalidOperationException("The doctor is not available at the requested time.");
 
             var appointment = mapper.Map<Domain.Entities.Appointment>(request);
+            appointment.Status = AppointmentStatus.Scheduled;
             await unitOfWork.AppointmentRepository.AddAsync(appointment);
             await unitOfWork.SaveChangesAsync();
 

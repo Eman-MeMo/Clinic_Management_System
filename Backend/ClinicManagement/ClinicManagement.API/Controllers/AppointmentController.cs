@@ -167,8 +167,8 @@ namespace ClinicManagement.API.Controllers
                 logger.LogWarning("Appointment with ID {AppointmentId} not found for status update", id);
                 return NotFound($"Appointment with ID {id} not found.");
             }
-
-            await unitOfWork.AppointmentRepository.UpdateAppointmentStatusAsync(id, status);
+            appointment.Status = status;
+            unitOfWork.AppointmentRepository.Update(appointment);
             await unitOfWork.SaveChangesAsync();
 
             logger.LogInformation("Appointment status updated successfully for ID {AppointmentId}", id);

@@ -9,6 +9,7 @@ namespace ClinicManagement.Application.Interfaces
 {
     public interface ISessionService
     {
-        Task EndSession(int sessionId, SessionStatus status);
+        Task EndSessionAsync(int sessionId, SessionStatus status);
+        Task<int> StartSessionAsync(int appointmentId);
     }
 }

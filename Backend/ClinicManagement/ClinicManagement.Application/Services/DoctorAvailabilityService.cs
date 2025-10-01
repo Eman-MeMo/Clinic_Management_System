@@ -1,7 +1,5 @@
 ﻿using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.Entities;
-using ClinicManagement.Infrastructure.Data;
-using ClinicManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

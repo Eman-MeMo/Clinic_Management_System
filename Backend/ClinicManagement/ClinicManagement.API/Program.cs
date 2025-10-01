@@ -10,7 +10,6 @@ using ClinicManagement.Infrastructure.Repositories;
 using ClinicManagement.Application.Interfaces;
 using Serilog;
 using Serilog.Formatting.Compact;
-using ClinicManagement.Application.Commands.Appointments.UpdateAppointmentStatus;
 using ClinicManagement.Application.Behaviors;
 using MediatR;
 using ClinicManagement.Application.Commands.Appointments.BookAppointment;
