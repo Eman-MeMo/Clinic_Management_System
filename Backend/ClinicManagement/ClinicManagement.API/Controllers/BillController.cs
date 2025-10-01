@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
+using ClinicManagement.Application.Commands.Bills.CreateBill;
+using ClinicManagement.Application.Commands.Bills.MarkBillAsPaid;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.DTOs.AppointmentDTOs;
 using ClinicManagement.Domain.DTOs.BillDTOs;
 using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +22,14 @@ namespace ClinicManagement.API.Controllers
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
         private readonly ILogger<BillController> logger;
+        private readonly IMediator mediator;
 
-        public BillController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<BillController> _logger)
+        public BillController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<BillController> _logger,IMediator _mediator)
         {
             unitOfWork = _unitOfWork;
             mapper = _mapper;
             logger = _logger;
+            mediator = _mediator;
         }
 
         [HttpGet]
@@ -70,42 +75,13 @@ namespace ClinicManagement.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBill([FromBody] CraeteBillDto craeteBillDto)
+        public async Task<IActionResult> CreateBill([FromBody] CreateBillCommand createBillCommand)
         {
             logger.LogInformation("Creating new bill");
-            if (craeteBillDto == null)
-            {
-                logger.LogWarning("CreateBillDto is null");
-                return BadRequest("Bill data is null.");
-            }
+            var billId= mediator.Send(createBillCommand);
 
-            var patient = await unitOfWork.PatientRepository.GetByIdAsync(craeteBillDto.PatientId);
-            if (patient == null)
-            {
-                logger.LogWarning("Patient with ID {PatientId} not found", craeteBillDto.PatientId);
-                return NotFound($"Patient with ID {craeteBillDto.PatientId} not found.");
-            }
-
-            var session = await unitOfWork.SessionRepository.GetByIdAsync(craeteBillDto.SessionId);
-            if (session == null)
-            {
-                logger.LogWarning("Session with ID {SessionId} not found", craeteBillDto.SessionId);
-                return NotFound($"Session with ID {craeteBillDto.SessionId} not found.");
-            }
-
-            var existingBill = await unitOfWork.BillRepository.GetBySessionAsync(craeteBillDto.SessionId);
-            if (existingBill.Any())
-            {
-                logger.LogWarning("Bill already exists for session ID {SessionId}", craeteBillDto.SessionId);
-                return Conflict($"A bill already exists for session ID {craeteBillDto.SessionId}.");
-            }
-
-            var bill = mapper.Map<Bill>(craeteBillDto);
-            await unitOfWork.BillRepository.AddAsync(bill);
-            await unitOfWork.SaveChangesAsync();
-
-            logger.LogInformation("Bill created with ID {BillId}", bill.Id);
-            return CreatedAtAction(nameof(GetBillById), new { id = bill.Id }, mapper.Map<BillDto>(bill));
+            logger.LogInformation("Bill created with ID {BillId}", billId);
+            return CreatedAtAction(nameof(GetBillById), new { id = billId });
         }
 
         [HttpPut("{id}")]
@@ -209,36 +185,22 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> MarkBillAsPaid(int billId)
         {
             logger.LogInformation("Marking bill with ID {BillId} as paid", billId);
+
             if (billId <= 0)
             {
                 logger.LogWarning("Invalid bill ID: {BillId}", billId);
                 return BadRequest("Invalid bill ID.");
             }
 
-            var bill = await unitOfWork.BillRepository.GetByIdAsync(billId);
-            if (bill == null)
+            var result = await mediator.Send(new MarkBillAsPaidCommand { Id = billId });
+
+            if (!result)
             {
-                logger.LogWarning("Bill with ID {BillId} not found", billId);
-                return NotFound($"Bill with ID {billId} not found.");
+                logger.LogWarning("Failed to mark bill {BillId} as paid", billId);
+                return BadRequest("Bill could not be marked as paid. Either it doesn’t exist, is already paid, or payment is invalid.");
             }
 
-            if (bill.IsPaid)
-            {
-                logger.LogWarning("Bill with ID {BillId} is already marked as paid", billId);
-                return BadRequest("Bill is already marked as paid.");
-            }
-
-            var payment = await unitOfWork.PaymentRepository.GetPaymentByBillIdAsync(billId);
-            if (payment == null || payment.Amount != bill.Amount)
-            {
-                logger.LogWarning("Invalid payment data for bill ID {BillId}", billId);
-                return BadRequest("Cannot mark bill as paid. Payment not found or amount doesn't match the bill total.");
-            }
-
-            bill.IsPaid = true;
-            await unitOfWork.SaveChangesAsync();
-
-            logger.LogInformation("Bill with ID {BillId} marked as paid", billId);
+            logger.LogInformation("Bill with ID {BillId} marked as paid successfully", billId);
             return NoContent();
         }
     }

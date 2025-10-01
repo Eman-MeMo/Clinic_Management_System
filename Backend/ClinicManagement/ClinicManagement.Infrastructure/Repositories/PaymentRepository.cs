@@ -39,10 +39,5 @@ namespace ClinicManagement.Infrastructure.Repositories
             return await db.Payments.AsNoTracking().Include(p => p.Bill)
                 .AnyAsync(p => p.BillId == billId && p.Bill.IsPaid);
         }
-        public async Task<Payment> GetPaymentByBillIdAsync(int billId)
-        {
-            return await db.Payments.AsNoTracking().FirstOrDefaultAsync(p => p.BillId == billId);
-        }
-
     }
 }

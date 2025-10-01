@@ -13,6 +13,5 @@ namespace ClinicManagement.Application.Interfaces
         Task<IEnumerable<Payment>> GetByDateRangeAsync(DateTime start, DateTime end);
         Task<bool> GetStatusAsync(int billId);
         Task<Payment> GetByBillIdAsync(int billId);
-        Task<Payment> GetPaymentByBillIdAsync(int billId);
     }
 }
