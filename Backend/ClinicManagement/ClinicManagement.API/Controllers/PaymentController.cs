@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using ClinicManagement.Application.Commands.Payments.CreatePayment;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.DTOs.PaymentDTOs;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,12 +19,14 @@ namespace ClinicManagement.API.Controllers
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
         private readonly ILogger<PaymentController> logger;
+        private readonly IMediator mediator;
 
-        public PaymentController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<PaymentController> _logger)
+        public PaymentController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<PaymentController> _logger,IMediator _mediator)
         {
             unitOfWork = _unitOfWork;
             mapper = _mapper;
             logger = _logger;
+            mediator = _mediator;
         }
 
         [HttpGet]
@@ -66,41 +70,17 @@ namespace ClinicManagement.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentDto createPaymentDto)
+        public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentCommand command)
         {
-            logger.LogInformation("Creating payment for bill ID {BillId}", createPaymentDto?.BillId);
-            if (createPaymentDto == null)
+            logger.LogInformation("Creating payment for bill ID {BillId}", command?.BillId);
+            if (command == null)
             {
                 logger.LogWarning("Payment creation failed: data is null");
                 return BadRequest("Invalid payment data.");
             }
-
-            var bill = await unitOfWork.BillRepository.GetByIdAsync(createPaymentDto.BillId);
-            if (bill == null)
-            {
-                logger.LogWarning("Bill with ID {BillId} not found", createPaymentDto.BillId);
-                return NotFound($"Bill with ID {createPaymentDto.BillId} not found.");
-            }
-
-            if (bill.IsPaid)
-            {
-                logger.LogWarning("Bill with ID {BillId} is already paid", createPaymentDto.BillId);
-                return BadRequest($"Bill with ID {createPaymentDto.BillId} is already marked as paid.");
-            }
-
-            if (createPaymentDto.Amount != bill.Amount)
-            {
-                logger.LogWarning("Mismatch between payment and bill amount for Bill ID {BillId}", createPaymentDto.BillId);
-                return BadRequest("Payment amount must match the bill amount.");
-            }
-
-            var payment = mapper.Map<Domain.Entities.Payment>(createPaymentDto);
-            await unitOfWork.PaymentRepository.AddAsync(payment);
-            bill.IsPaid = true;
-            await unitOfWork.SaveChangesAsync();
-
-            logger.LogInformation("Payment created successfully for Bill ID {BillId}", createPaymentDto.BillId);
-            return CreatedAtAction(nameof(GetPaymentById), new { id = payment.Id }, mapper.Map<PaymentDto>(payment));
+            var paymnentId= await mediator.Send(command);
+            logger.LogInformation("Payment created successfully for Bill ID {BillId}", command.BillId);
+            return CreatedAtAction(nameof(GetPaymentById), new { id = paymnentId});
         }
 
         [HttpPut("{id}")]
