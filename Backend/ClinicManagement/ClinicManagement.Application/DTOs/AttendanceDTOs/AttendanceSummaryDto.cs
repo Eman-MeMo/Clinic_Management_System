@@ -8,10 +8,7 @@ using System.Threading.Tasks;
 namespace ClinicManagement.Domain.DTOs.AttendanceDTOs
 {
     public class AttendanceSummaryDto
-    {
-        [Required(ErrorMessage = "Doctor ID is required.")]
-        public string DoctorId { get; set; }
-        
+    {   
         [Required]
         [DataType(DataType.Date)]
         public DateTime Date { get; set; }

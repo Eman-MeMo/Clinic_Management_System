@@ -1,10 +1,15 @@
 ﻿using AutoMapper;
+using ClinicManagement.Application.Commands.Attendances.MarkAbsent;
+using ClinicManagement.Application.Commands.Attendances.MarkPresent;
 using ClinicManagement.Application.Interfaces;
+using ClinicManagement.Application.Queries.Attendances.GetDailyAttendanceSummary;
+using ClinicManagement.Application.Queries.Attendances.GetPatientAttendanceHistory;
 using ClinicManagement.Domain.DTOs.AppointmentDTOs;
 using ClinicManagement.Domain.DTOs.AttendanceDTOs;
 using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.DTOs.PatientDTOs;
 using ClinicManagement.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +24,14 @@ namespace ClinicManagement.API.Controllers
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
         private readonly ILogger<AttendanceController> logger;
+        private readonly IMediator mediator;
 
-        public AttendanceController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<AttendanceController> _logger)
+        public AttendanceController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<AttendanceController> _logger,IMediator _mediator)
         {
             unitOfWork = _unitOfWork;
             mapper = _mapper;
             logger = _logger;
+            mediator = _mediator;
         }
 
         [HttpGet]
@@ -201,7 +208,32 @@ namespace ClinicManagement.API.Controllers
             var absentPatientDtos = mapper.Map<IEnumerable<PatientDto>>(absentPatients);
             return Ok(absentPatientDtos);
         }
-
+        [HttpPut("mark-absent")]
+        public async Task<IActionResult> MarkAttendanceAsAbsent([FromBody] MarkAbsentCommand command)
+        {
+            logger.LogInformation($"Try Marking patient ID:{command.PatientId} at sesssion ID:{command.SessionId} as Absent");
+            var result = await mediator.Send(command);
+            if (result == 0)
+            {
+                logger.LogWarning("Failed to mark attendance as absent for Patient ID: {PatientId} at Session ID: {SessionId}", command.PatientId, command.SessionId);
+                return BadRequest("Failed to mark attendance as absent.");
+            }
+            logger.LogInformation("Successfully marked attendance as absent for Patient ID: {PatientId} at Session ID: {SessionId}", command.PatientId, command.SessionId);
+            return Ok(new { AttendanceId = result });
+        }
+        [HttpPut("mark-present")]
+        public async Task<IActionResult> MarkAttendanceAsPresent([FromBody] MarkPresentCommand command)
+        {
+            logger.LogInformation($"Try Marking patient ID:{command.PatientId} at sesssion ID:{command.SessionId} as Present");
+            var result = await mediator.Send(command);
+            if (result == 0)
+            {
+                logger.LogWarning("Failed to mark attendance as present for Patient ID: {PatientId} at Session ID: {SessionId}", command.PatientId, command.SessionId);
+                return BadRequest("Failed to mark attendance as present.");
+            }
+            logger.LogInformation("Successfully marked attendance as present for Patient ID: {PatientId} at Session ID: {SessionId}", command.PatientId, command.SessionId);
+            return Ok(new { AttendanceId = result });
+        }
         [HttpGet("daily-summary")]
         public async Task<IActionResult> GetDailySummaryReport([FromQuery] DateTime date)
         {
@@ -209,14 +241,37 @@ namespace ClinicManagement.API.Controllers
             if (date > DateTime.Now)
                 return BadRequest("Invalid date!");
 
-            var summary = await unitOfWork.AttendanceRepository.GetDailySummaryReportAsync(date);
+            var summary = await mediator.Send(new GetDailyAttendanceSummaryQuery { Date = date });
             if (summary == null)
             {
                 logger.LogWarning("No attendance records found for summary on date: {Date}", date);
                 return NotFound("No attendance records found for the specified date.");
             }
-
             return Ok(summary);
         }
+        [HttpGet("PatientAttendanceHistory")]
+        public async Task<IActionResult> GetPatientAttendanceHistory([FromQuery] string patientId)
+        {
+            logger.LogInformation("Fetching attendance history for patient ID: {PatientId}", patientId);
+
+            if (string.IsNullOrWhiteSpace(patientId))
+            {
+                logger.LogWarning("Patient ID is null or empty.");
+                return BadRequest("Patient ID cannot be null or empty.");
+            }
+
+            var query = new GetPatientAttendanceHistoryQuery { PatientId = patientId };
+            var history = await mediator.Send(query);
+
+            if (history == null || !history.Any())
+            {
+                logger.LogWarning("No attendance history found for Patient ID: {PatientId}", query.PatientId);
+                return NotFound("No attendance history found.");
+            }
+
+            logger.LogInformation("Successfully retrieved attendance history for Patient ID: {PatientId}", query.PatientId);
+            return Ok(history);
+        }
+
     }
 }

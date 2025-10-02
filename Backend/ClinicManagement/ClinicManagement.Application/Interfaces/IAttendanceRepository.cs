@@ -10,6 +10,7 @@ namespace ClinicManagement.Application.Interfaces
 {
     public interface IAttendanceRepository:IGenericRepository<Attendance>
     {
+        Task<IEnumerable<Attendance>> GetPatientAttendanceHistoryAsync(string patientId);
         Task<Attendance> GetBySessionIdAsync(int sessionId);
         Task<IEnumerable<Attendance>> GetByDateAsync(DateTime date);
         Task<Attendance> GetByPatientIdAndDateAsync(string patientId, DateTime date);

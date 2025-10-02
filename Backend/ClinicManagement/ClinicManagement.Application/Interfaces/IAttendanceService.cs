@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Interfaces
 {
-    public interface IAttendanceReportService
+    public interface IAttendanceService
     {
+        Task<int> MarkPresentAsync(int sessionId, string patientId, string? notes);
+        Task<int> MarkAbsentAsync(int sessionId, string patientId, string? notes);
         Task<AttendanceSummaryDto> GetDailySummaryReportAsync(DateTime date);
     }
 }

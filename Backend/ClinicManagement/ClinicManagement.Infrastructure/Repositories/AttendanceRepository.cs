@@ -52,6 +52,18 @@ namespace ClinicManagement.Infrastructure.Repositories
                     a.PatientId == patientId &&
                     a.Session.Appointment.Date.Date == date.Date);
         }
+        public async Task<IEnumerable<Attendance>> GetPatientAttendanceHistoryAsync(string patientId)
+        {
+            if (string.IsNullOrWhiteSpace(patientId))
+                throw new ArgumentException("Patient ID is required.");
+
+            return await db.Attendances.AsNoTracking()
+                .Include(a => a.Session)
+                .ThenInclude(s => s.Appointment)
+                .Where(a => a.PatientId == patientId)
+                .OrderByDescending(a => a.Session.Appointment.Date)
+                .ToListAsync();
+        }
 
         public async Task<Attendance> GetBySessionIdAsync(int sessionId)
         {
