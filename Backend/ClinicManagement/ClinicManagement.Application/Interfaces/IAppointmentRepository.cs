@@ -11,7 +11,9 @@ namespace ClinicManagement.Application.Interfaces
     public interface IAppointmentRepository:IGenericRepository<Appointment>
     {
         Task<IEnumerable<Appointment>> GetAllByDoctorIdAsync(string doctorId);
-        Task<bool> HasAppointmentForDoctorAtAsync(string doctorId, DateTime date, int? appointmentIdToExclude = null);
+        Task<bool> HasAppointmentForDoctorAtDateAsync(string doctorId, DateTime date, int? appointmentIdToExclude = null);
+        Task<bool> HasAppointmentForDoctorAsync(string doctorId);
         Task<IEnumerable<Appointment>> GetAllByPatientIdAsync(string pateintId);
+        Task CancelAllAppointmentsForPatient(string patientId);
     }
 }

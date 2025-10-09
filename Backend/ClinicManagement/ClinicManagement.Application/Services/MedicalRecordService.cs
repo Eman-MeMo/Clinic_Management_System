@@ -1,23 +1,23 @@
 ﻿using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
-
-namespace ClinicManagement.Infrastructure.Services
+namespace ClinicManagement.Application.Services
 {
-    public class PrescriptionService: IPrescriptionService
+    public class MedicalRecordService:IMedicalRecordService
     {
         private readonly IUnitOfWork unitOfWork;
-        public PrescriptionService(IUnitOfWork _unitOfWork)
+        public MedicalRecordService(IUnitOfWork _unitOfWork)
         {
             unitOfWork = _unitOfWork;
         }
-        public async Task CreateMedicalRecoredAsync(string? Notes, string Diagnosis, int prescriptionId)
+
+        public async Task<int> CreateMedicalRecordAsync(string? Notes, string Diagnosis, int prescriptionId)
         {
             var prescription = await unitOfWork.PrescriptionRepository.GetAllAsQueryable()
                 .Include(p => p.Session)
@@ -36,6 +36,7 @@ namespace ClinicManagement.Infrastructure.Services
             };
             await unitOfWork.MedicalRecordRepository.AddAsync(medicalRecord);
             await unitOfWork.SaveChangesAsync();
+            return medicalRecord.Id;
         }
-    }
+
 }

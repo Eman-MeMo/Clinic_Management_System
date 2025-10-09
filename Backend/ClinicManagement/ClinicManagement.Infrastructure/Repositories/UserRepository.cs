@@ -48,15 +48,5 @@ namespace ClinicManagement.Infrastructure.Repositories
         {
             return await db.Set<T>().AsNoTracking().FirstOrDefaultAsync(p => p.Email == email);
         }
-        public async Task<T> DeactivateUserAsync(string id)
-        {
-            var user = await db.Set<T>().FindAsync(id);
-            if (user != null)
-            {
-                user.IsActive = false;
-                db.Set<T>().Update(user);
-            }
-            return user;
-        }
     }
 }

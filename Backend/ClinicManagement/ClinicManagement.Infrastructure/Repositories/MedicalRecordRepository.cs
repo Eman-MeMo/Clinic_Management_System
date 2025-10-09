@@ -22,7 +22,11 @@ namespace ClinicManagement.Infrastructure.Repositories
         {
             return await db.MedicalRecords.AsNoTracking().Where(m => m.PatientId == patientId).ToListAsync();
         }
-
+        public async Task<bool> GetByPatientIdAndDateAsync(string patientId, DateTime date)
+        {
+            return await db.MedicalRecords.AsNoTracking()
+                .AnyAsync(m => m.PatientId == patientId && m.Date.Date == date.Date);
+        }
         public async Task<MedicalRecord> GetLatestRecordAsync(string patientId)
         {
             return await db.MedicalRecords.AsNoTracking()

@@ -13,7 +13,6 @@ namespace ClinicManagement.Application.Interfaces
         IQueryable<T> GetAllAsQueryable();
         Task<T> GetByIdAsync(string id);
         Task<T> GetByEmailAsync(string email);
-        Task<T> DeactivateUserAsync(string id);
         Task AddAsync(T entity);
         void Delete(T entity);
         void Update(T entity);

@@ -50,7 +50,7 @@ namespace ClinicManagement.API.Controllers
             return Ok(serviceDtos);
         }
 
-        [HttpGet("service/{serviceId}/session/{sessionId}")]
+        [HttpGet("{sessionId}/{serviceId}")]
         public async Task<IActionResult> GetSessionServiceById(int sessionId, int serviceId)
         {
             logger.LogInformation("Fetching session service with Session ID: {SessionId}, Service ID: {ServiceId}", sessionId, serviceId);
@@ -100,7 +100,8 @@ namespace ClinicManagement.API.Controllers
 
             logger.LogInformation("Successfully created SessionService for Session ID: {SessionId}, Service ID: {ServiceId}", sessionService.SessionId, sessionService.ServiceId);
 
-            return CreatedAtAction(nameof(GetSessionServices), new { sessionId = sessionService.SessionId }, sessionService);
+            var resultDto = mapper.Map<SessionServiceDto>(sessionService);
+            return CreatedAtAction(nameof(GetSessionServiceById), new { sessionId = sessionService.SessionId, serviceId = sessionService.ServiceId }, resultDto);
         }
 
         [HttpDelete("{sessionId}/{serviceId}")]

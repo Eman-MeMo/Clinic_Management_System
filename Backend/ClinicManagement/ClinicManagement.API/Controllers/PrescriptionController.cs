@@ -18,12 +18,14 @@ namespace ClinicManagement.API.Controllers
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
         private readonly ILogger<PrescriptionController> logger;
+        private readonly IMedicalRecordService medicalRecordService;
 
-        public PrescriptionController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<PrescriptionController> _logger)
+        public PrescriptionController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<PrescriptionController> _logger, IMedicalRecordService _medicalRecordService)
         {
             unitOfWork = _unitOfWork;
             mapper = _mapper;
             logger = _logger;
+            medicalRecordService = _medicalRecordService;
         }
 
         [HttpGet]
@@ -89,7 +91,7 @@ namespace ClinicManagement.API.Controllers
 
             logger.LogInformation("Prescription created with ID: {Id}", prescription.Id);
 
-            await unitOfWork.PrescriptionRepository.CreateMedicalRecoredAsync(prescriptionDto.Notes, prescriptionDto.Diagnosis, prescription.Id);
+            await medicalRecordService.CreateMedicalRecordAsync(prescriptionDto.Notes, prescriptionDto.Diagnosis, prescription.Id);
 
             logger.LogInformation("Associated medical record created for prescription ID: {Id}", prescription.Id);
 

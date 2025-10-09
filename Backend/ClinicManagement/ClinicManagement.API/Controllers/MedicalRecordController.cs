@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using ClinicManagement.Application.Commands.Prescriptions.CreateMedicalRecord;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.DTOs.MedicalRecordDTOs;
 using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -60,22 +62,6 @@ namespace ClinicManagement.API.Controllers
             var mappedRecord = mapper.Map<MedicalRecordDto>(record);
             logger.LogInformation("Medical record with ID {Id} retrieved successfully", id);
             return Ok(mappedRecord);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> CreateMedicalRecord([FromBody] CreateMedicalRecordDto medicalRecordDto)
-        {
-            if (medicalRecordDto == null)
-            {
-                logger.LogWarning("Attempted to create a medical record with null data");
-                return BadRequest("Medical record data cannot be null.");
-            }
-
-            var newRecord = mapper.Map<MedicalRecord>(medicalRecordDto);
-            await unitOfWork.MedicalRecordRepository.AddAsync(newRecord);
-            await unitOfWork.SaveChangesAsync();
-            logger.LogInformation("Created new medical record with ID {Id}", newRecord.Id);
-            return CreatedAtAction(nameof(GetMedicalRecordById), new { id = newRecord.Id }, medicalRecordDto);
         }
 
         [HttpPut("{id}")]

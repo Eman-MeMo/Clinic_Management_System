@@ -28,7 +28,7 @@ namespace ClinicManagement.Infrastructure.Repositories
         {
             return await db.Appointments.AsNoTracking().Where(p => p.PatientId == pateintId).ToListAsync();
         }
-        public async Task<bool> HasAppointmentForDoctorAtAsync(string doctorId, DateTime date, int? appointmentIdToExclude = null)
+        public async Task<bool> HasAppointmentForDoctorAtDateAsync(string doctorId, DateTime date, int? appointmentIdToExclude = null)
         {
             return await db.Appointments
             .AnyAsync(a =>
@@ -36,6 +36,22 @@ namespace ClinicManagement.Infrastructure.Repositories
                     a.Date == date &&
                     (appointmentIdToExclude == null || a.Id != appointmentIdToExclude)
                 );
+        }
+        public async Task<bool> HasAppointmentForDoctorAsync(string doctorId)
+        {
+            return await db.Appointments
+                .AnyAsync(a => a.DoctorId == doctorId && a.Date > DateTime.Now);
+        }
+        public async Task CancelAllAppointmentsForPatient(string patientId)
+        {
+            var appointments = await db.Appointments
+                .Where(a => a.PatientId == patientId && a.Status == AppointmentStatus.Scheduled)
+                .ToListAsync();
+            foreach (var appointment in appointments)
+            {
+                appointment.Status = AppointmentStatus.Cancelled;
+            }
+            db.Appointments.UpdateRange(appointments);
         }
     }
 }
