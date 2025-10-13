@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+using ClinicManagement.Application.Commands.Users.DeactivateUser;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.DTOs.AdminDTOs;
+using ClinicManagement.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -12,22 +15,24 @@ namespace ClinicManagement.API.Controllers
     [ApiController]
     public class AdminController : ControllerBase
     {
-        private readonly IUnitOfWork unitOfWork;
+        private readonly IUserService<Admin> adminService;
         private readonly IMapper mapper;
         private readonly ILogger<AdminController> logger;
+        private readonly IMediator mediator;
 
-        public AdminController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<AdminController> _logger)
+        public AdminController(IUserService<Admin> _adminService, IMapper _mapper, ILogger<AdminController> _logger, IMediator _mediator)
         {
-            unitOfWork = _unitOfWork;
+            adminService = _adminService;
             mapper = _mapper;
             logger = _logger;
+            mediator = _mediator;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllAdmins()
         {
             logger.LogInformation("Fetching all admins");
-            var admins = await unitOfWork.AdminRepository.GetAllAsync();
+            var admins = await adminService.GetAllAsync();
             if (admins == null || !admins.Any())
             {
                 logger.LogWarning("No admins found.");
@@ -42,7 +47,7 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> GetAdminById(string id)
         {
             logger.LogInformation("Fetching admin with ID: {Id}", id);
-            var admin = await unitOfWork.AdminRepository.GetByIdAsync(id);
+            var admin = await adminService.GetByIdAsync(id);
             if (admin == null)
             {
                 logger.LogWarning("Admin with ID {Id} not found.", id);
@@ -57,7 +62,7 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> GetAdminByEmail(string email)
         {
             logger.LogInformation("Fetching admin with Email: {Email}", email);
-            var admin = await unitOfWork.AdminRepository.GetByEmailAsync(email);
+            var admin = await adminService.GetByEmailAsync(email);
             if (admin == null)
             {
                 logger.LogWarning("Admin with Email {Email} not found.", email);
@@ -77,15 +82,14 @@ namespace ClinicManagement.API.Controllers
                 logger.LogWarning("Admin data is null.");
                 return BadRequest("Admin data is null.");
             }
-            var admin = await unitOfWork.AdminRepository.GetByIdAsync(id);
+            var admin = await adminService.GetByIdAsync(id);
             if (admin == null)
             {
                 logger.LogWarning("Admin with ID {Id} not found.", id);
                 return NotFound($"Admin with ID {id} not found.");
             }
             mapper.Map(adminDto, admin);
-            unitOfWork.AdminRepository.Update(admin);
-            await unitOfWork.SaveChangesAsync();
+            await adminService.Update(admin);
             logger.LogInformation("Admin with ID {Id} updated successfully", id);
 
             var resultDto = mapper.Map<AdminDto>(admin);
@@ -96,14 +100,15 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> DeactivateAdmin(string id)
         {
             logger.LogInformation("Deactivating admin with ID: {Id}", id);
-            var admin = await unitOfWork.AdminRepository.GetByIdAsync(id);
+            var admin = await adminService.GetByIdAsync(id);
             if (admin == null)
             {
                 logger.LogWarning("Admin with ID {Id} not found.", id);
                 return NotFound($"Admin with ID {id} not found.");
             }
-            await unitOfWork.AdminRepository.DeactivateUserAsync(id);
-            await unitOfWork.SaveChangesAsync();
+
+            await mediator.Send(new DeactivateUserCommand { UserId = id, UserType = "Admin" });
+
             logger.LogInformation("Admin with ID {Id} deactivated successfully", id);
             return NoContent();
         }
@@ -112,14 +117,13 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> DeleteAdmin(string id)
         {
             logger.LogInformation("Deleting admin with ID: {Id}", id);
-            var admin = await unitOfWork.AdminRepository.GetByIdAsync(id);
+            var admin = await adminService.GetByIdAsync(id);
             if (admin == null)
             {
                 logger.LogWarning("Admin with ID {Id} not found.", id);
                 return NotFound($"Admin with ID {id} not found.");
             }
-            unitOfWork.AdminRepository.Delete(admin);
-            await unitOfWork.SaveChangesAsync();
+            await adminService.Delete(admin);
             logger.LogInformation("Admin with ID {Id} deleted successfully", id);
             return NoContent();
         }

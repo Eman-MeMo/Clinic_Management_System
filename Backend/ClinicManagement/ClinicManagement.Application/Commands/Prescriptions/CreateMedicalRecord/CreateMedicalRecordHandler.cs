@@ -22,7 +22,7 @@ namespace ClinicManagement.Application.Commands.Prescriptions.CreateMedicalRecor
                 throw new ArgumentNullException(nameof(request));
             }
 
-            return await medicalRecordService.CreateMedicalRecord(request.PatientId, request.Date, request.Notes, request.Diagnosis);
+            return await medicalRecordService.CreateMedicalRecordAsync(request.Notes, request.Diagnosis, request.PrescriptionId);
         }
     }
 }

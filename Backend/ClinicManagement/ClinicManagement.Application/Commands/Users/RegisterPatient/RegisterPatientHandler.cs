@@ -10,8 +10,8 @@ namespace ClinicManagement.Application.Commands.Users.RegisterPatient
 {
     public class RegisterPatientHandler : IRequestHandler<RegisterPatientCommand, object>
     {
-        private readonly IUserService userService;
-        public RegisterPatientHandler(IUserService _userService) 
+        private readonly IAccountService userService;
+        public RegisterPatientHandler(IAccountService _userService) 
         {
             userService = _userService;
         }

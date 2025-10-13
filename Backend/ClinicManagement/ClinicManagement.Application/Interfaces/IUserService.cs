@@ -1,5 +1,4 @@
-﻿using ClinicManagement.Domain.DTOs.AccountDTOs;
-using ClinicManagement.Domain.Enums;
+﻿using ClinicManagement.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,11 +7,14 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Interfaces
 {
-    public interface IUserService
+    public interface IUserService<T> where T : AppUser
     {
-        Task<object> LoginAsync(string  Email,string Password);
-        Task<object> RegisterPatientAsync(string FirstName, string Lastname, string PhoneNumber, string Email, string Password, string ConfirmPassword, string NationId, Gender gender, DateOnly dateOfBirth);
-        Task<object> RegisterDoctorAsync(string FirstName, string Lastname, string PhoneNumber, string Email, string Password, string ConfirmPassword, int SpecializationId);
-        Task<object> RegisterAdminAsync(string FirstName,string Lastname,string PhoneNumber,string Email,string Password,string ConfirmPassword);
+        Task<IEnumerable<T>> GetAllAsync();
+        IQueryable<T> GetAllAsQueryable();
+        Task<T> GetByIdAsync(string id);
+        Task<T> GetByEmailAsync(string email);
+        Task AddAsync(T entity);
+        Task Delete(T entity);
+        Task Update(T entity);
     }
 }

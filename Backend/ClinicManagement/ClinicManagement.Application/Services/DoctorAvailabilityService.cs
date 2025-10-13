@@ -31,7 +31,7 @@ namespace ClinicManagement.Infrastructure.Services
                 return false; // Doctor is not available on this day or time
 
             // 2️ Check Appointment conflicts
-            var hasConflict = await unitOfWork.AppointmentRepository.HasAppointmentForDoctorAtAsync(doctorId, date, appointmentIdToExclude);
+            var hasConflict = await unitOfWork.AppointmentRepository.HasAppointmentForDoctorAtDateAsync(doctorId, date, appointmentIdToExclude);
 
             return !hasConflict;
         }

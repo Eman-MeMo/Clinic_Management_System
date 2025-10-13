@@ -1,6 +1,10 @@
 ﻿using AutoMapper;
+using ClinicManagement.Application.Commands.Users.DeactivateUser;
 using ClinicManagement.Application.Interfaces;
+using ClinicManagement.Application.Services;
 using ClinicManagement.Domain.DTOs.DoctorDTOs;
+using ClinicManagement.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -12,22 +16,24 @@ namespace ClinicManagement.API.Controllers
     [ApiController]
     public class DoctorController : ControllerBase
     {
-        private readonly IUnitOfWork unitOfWork;
+        private readonly IDoctorService doctorService;
         private readonly IMapper mapper;
         private readonly ILogger<DoctorController> logger;
+        private readonly IMediator mediator;
 
-        public DoctorController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<DoctorController> _logger)
+        public DoctorController(IDoctorService _doctorService, IMapper _mapper, ILogger<DoctorController> _logger, IMediator _mediator)
         {
-            unitOfWork = _unitOfWork;
+            doctorService = _doctorService;
             mapper = _mapper;
             logger = _logger;
+            mediator = _mediator;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllDoctors()
         {
             logger.LogInformation("Getting all doctors.");
-            var doctors = await unitOfWork.DoctorRepository.GetAllAsync();
+            var doctors = await doctorService.GetAllAsync();
             if (doctors == null || !doctors.Any())
             {
                 logger.LogWarning("No doctors found.");
@@ -42,7 +48,7 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> GetDoctorById(string id)
         {
             logger.LogInformation("Getting doctor by ID: {Id}", id);
-            var doctor = await unitOfWork.DoctorRepository.GetByIdAsync(id);
+            var doctor = await doctorService.GetByIdAsync(id);
             if (doctor == null)
             {
                 logger.LogWarning("Doctor with ID {Id} not found.", id);
@@ -57,7 +63,7 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> GetDoctorByEmail(string email)
         {
             logger.LogInformation("Getting doctor by email: {Email}", email);
-            var doctor = await unitOfWork.DoctorRepository.GetByEmailAsync(email);
+            var doctor = await doctorService.GetByEmailAsync(email);
             if (doctor == null)
             {
                 logger.LogWarning("Doctor with Email {Email} not found.", email);
@@ -77,7 +83,7 @@ namespace ClinicManagement.API.Controllers
                 logger.LogWarning("Invalid data while updating doctor with ID: {Id}", id);
                 return BadRequest("Invalid data!");
             }
-            var doctor = await unitOfWork.DoctorRepository.GetByIdAsync(id);
+            var doctor = await doctorService.GetByIdAsync(id);
             if (doctor == null)
             {
                 logger.LogWarning("Doctor with ID {Id} not found for update.", id);
@@ -85,8 +91,7 @@ namespace ClinicManagement.API.Controllers
             }
 
             mapper.Map(doctorDto, doctor);
-            unitOfWork.DoctorRepository.Update(doctor);
-            await unitOfWork.SaveChangesAsync();
+            doctorService.Update(doctor);
 
             logger.LogInformation("Doctor with ID {Id} updated successfully.", id);
             var resultDto = mapper.Map<DoctorDto>(doctor);
@@ -97,15 +102,14 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> DeactivateDoctor(string id)
         {
             logger.LogInformation("Deactivating doctor with ID: {Id}", id);
-            var doctor = await unitOfWork.DoctorRepository.GetByIdAsync(id);
+            var doctor = await doctorService.GetByIdAsync(id);
             if (doctor == null)
             {
                 logger.LogWarning("Doctor with ID {Id} not found for deactivation.", id);
                 return NotFound($"Doctor with ID {id} not found.");
             }
 
-            await unitOfWork.DoctorRepository.DeactivateUserAsync(id);
-            await unitOfWork.SaveChangesAsync();
+            await mediator.Send(new DeactivateUserCommand { UserId = id, UserType = "Doctor" });
 
             logger.LogInformation("Doctor with ID {Id} deactivated successfully.", id);
             return NoContent();
@@ -115,15 +119,14 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> DeleteDoctor(string id)
         {
             logger.LogInformation("Deleting doctor with ID: {Id}", id);
-            var doctor = await unitOfWork.DoctorRepository.GetByIdAsync(id);
+            var doctor = await doctorService.GetByIdAsync(id);
             if (doctor == null)
             {
                 logger.LogWarning("Doctor with ID {Id} not found for deletion.", id);
                 return NotFound($"Doctor with ID {id} not found.");
             }
 
-            unitOfWork.DoctorRepository.Delete(doctor);
-            await unitOfWork.SaveChangesAsync();
+            await doctorService.Delete(doctor);
 
             logger.LogInformation("Doctor with ID {Id} deleted successfully.", id);
             return NoContent();

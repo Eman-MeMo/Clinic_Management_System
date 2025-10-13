@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Interfaces
 {
-    public interface IDoctorRepository:IUserRepository<Doctor>
+    public interface IDoctorService:IUserService<Doctor>
     {
-        Task<IEnumerable<Doctor>> GetAllBySpecializationAsync(int specializationId);
+        Task<IEnumerable<Doctor>> GetDoctorsBySpecializationAsync(int specializationId);
     }
 }

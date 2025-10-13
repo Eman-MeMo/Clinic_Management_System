@@ -10,8 +10,8 @@ namespace ClinicManagement.Application.Commands.Users.LoginUser
 {
     public class LoginUserHandler : IRequestHandler<LoginUserCommand, Unit>
     {
-        private readonly IUserService accountService;
-        public LoginUserHandler(IUserService _accountService)
+        private readonly IAccountService accountService;
+        public LoginUserHandler(IAccountService _accountService)
         {
             accountService = _accountService;
         }

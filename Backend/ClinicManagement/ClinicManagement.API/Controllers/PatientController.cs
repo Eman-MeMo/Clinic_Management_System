@@ -1,7 +1,11 @@
 ﻿using AutoMapper;
+using ClinicManagement.Application.Commands.Users.DeactivateUser;
 using ClinicManagement.Application.Interfaces;
+using ClinicManagement.Application.Services;
 using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.DTOs.PatientDTOs;
+using ClinicManagement.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,15 +18,17 @@ namespace ClinicManagement.API.Controllers
     [ApiController]
     public class PatientController : ControllerBase
     {
-        private readonly IUnitOfWork unitOfWork;
+        private readonly IPatientService patientService;
         private readonly IMapper mapper;
         private readonly ILogger<PatientController> logger;
+        private readonly IMediator mediator;
 
-        public PatientController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<PatientController> _logger)
+        public PatientController(IPatientService _patientService, IMapper _mapper, ILogger<PatientController> _logger, IMediator _mediator)
         {
-            unitOfWork = _unitOfWork;
+            patientService = _patientService;
             mapper = _mapper;
             logger = _logger;
+            mediator = _mediator;
         }
 
         [HttpGet]
@@ -30,7 +36,7 @@ namespace ClinicManagement.API.Controllers
         {
             logger.LogInformation("Fetching patients: Page {PageNumber}, Size {PageSize}", pageNumber, pageSize);
 
-            var patients = unitOfWork.PatientRepository.GetAllAsQueryable();
+            var patients =  patientService.GetAllAsQueryable();
             var totalCount = await patients.CountAsync();
             var paginationSkip = (pageNumber - 1) * pageSize;
             var items = await patients.Skip(paginationSkip).Take(pageSize).ToListAsync();
@@ -53,7 +59,7 @@ namespace ClinicManagement.API.Controllers
         {
             logger.LogInformation("Fetching patient by ID: {Id}", id);
 
-            var patient = await unitOfWork.PatientRepository.GetByIdAsync(id);
+            var patient = await patientService.GetByIdAsync(id);
             if (patient == null)
             {
                 logger.LogWarning("Patient with ID {Id} not found.", id);
@@ -68,7 +74,7 @@ namespace ClinicManagement.API.Controllers
         {
             logger.LogInformation("Fetching patient by National ID: {NationalId}", nationalId);
 
-            var patient = await unitOfWork.PatientRepository.GetByNationalIdAsync(nationalId);
+            var patient = await patientService.GetByNationalIdAsync(nationalId);
             if (patient == null)
             {
                 logger.LogWarning("Patient with National ID {NationalId} not found.", nationalId);
@@ -83,7 +89,7 @@ namespace ClinicManagement.API.Controllers
         {
             logger.LogInformation("Fetching patient by email: {Email}", email);
 
-            var patient = await unitOfWork.PatientRepository.GetByEmailAsync(email);
+            var patient = await patientService.GetByEmailAsync(email);
             if (patient == null)
             {
                 logger.LogWarning("Patient with Email {Email} not found.", email);
@@ -94,9 +100,9 @@ namespace ClinicManagement.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePatient([FromBody] PatientDto patientDto)
+        public async Task<IActionResult> UpdatePatient(string id,[FromBody] PatientDto patientDto)
         {
-            if (patientDto == null || string.IsNullOrEmpty(patientDto.Id))
+            if (patientDto == null || patientDto.Id!=id)
             {
                 logger.LogWarning("Invalid patient data for update.");
                 return BadRequest("Invalid patient data.");
@@ -104,7 +110,7 @@ namespace ClinicManagement.API.Controllers
 
             logger.LogInformation("Updating patient with ID: {Id}", patientDto.Id);
 
-            var patient = await unitOfWork.PatientRepository.GetByIdAsync(patientDto.Id);
+            var patient = await patientService.GetByIdAsync(patientDto.Id);
             if (patient == null)
             {
                 logger.LogWarning("Patient with ID {Id} not found for update.", patientDto.Id);
@@ -112,8 +118,7 @@ namespace ClinicManagement.API.Controllers
             }
 
             mapper.Map(patientDto, patient);
-            unitOfWork.PatientRepository.Update(patient);
-            await unitOfWork.SaveChangesAsync();
+            await patientService.Update(patient);
 
             logger.LogInformation("Patient with ID {Id} updated successfully.", patientDto.Id);
 
@@ -125,15 +130,14 @@ namespace ClinicManagement.API.Controllers
         {
             logger.LogInformation("Deactivating patient with ID: {Id}", id);
 
-            var patient = await unitOfWork.PatientRepository.GetByIdAsync(id);
+            var patient = await patientService.GetByIdAsync(id);
             if (patient == null)
             {
                 logger.LogWarning("Patient with ID {Id} not found for deactivation.", id);
                 return NotFound($"Patient with ID {id} not found.");
             }
 
-            await unitOfWork.PatientRepository.DeactivateUserAsync(id);
-            await unitOfWork.SaveChangesAsync();
+            await mediator.Send(new DeactivateUserCommand { UserId = id, UserType = "Patient" });
 
             logger.LogInformation("Patient with ID {Id} deactivated successfully.", id);
 
@@ -145,15 +149,14 @@ namespace ClinicManagement.API.Controllers
         {
             logger.LogInformation("Deleting patient with ID: {Id}", id);
 
-            var patient = await unitOfWork.PatientRepository.GetByIdAsync(id);
+            var patient = await patientService.GetByIdAsync(id);
             if (patient == null)
             {
                 logger.LogWarning("Patient with ID {Id} not found for deletion.", id);
                 return NotFound($"Patient with ID {id} not found.");
             }
 
-            unitOfWork.PatientRepository.Delete(patient);
-            await unitOfWork.SaveChangesAsync();
+            await patientService.Delete(patient);
 
             logger.LogInformation("Patient with ID {Id} deleted successfully.", id);
 

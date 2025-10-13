@@ -10,9 +10,8 @@ namespace ClinicManagement.Application.Commands.Prescriptions.CreateMedicalRecor
 {
     public class CreateMedicalRecordCommand:IRequest<int>
     {
-        public int PatientId { get; set; }
-        public DateTime Date { get; set; }
+        public int PrescriptionId { get; set; }
         public string Diagnosis { get; set; }
-]        public string Notes { get; set; }
+       public string Notes { get; set; }
     }
 }

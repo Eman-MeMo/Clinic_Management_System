@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Services
 {
-    public class MedicalRecordService:IMedicalRecordService
+    public class MedicalRecordService : IMedicalRecordService
     {
         private readonly IUnitOfWork unitOfWork;
         public MedicalRecordService(IUnitOfWork _unitOfWork)
@@ -38,5 +38,5 @@ namespace ClinicManagement.Application.Services
             await unitOfWork.SaveChangesAsync();
             return medicalRecord.Id;
         }
-
+    }
 }

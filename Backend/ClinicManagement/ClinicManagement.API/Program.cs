@@ -14,6 +14,7 @@ using ClinicManagement.Application.Behaviors;
 using MediatR;
 using ClinicManagement.Application.Commands.Appointments.BookAppointment;
 using FluentValidation;
+using ClinicManagement.Application.Strategies;
 
 namespace ClinicManagement.API
 {
@@ -109,8 +110,13 @@ namespace ClinicManagement.API
                 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
                 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-                // Unit of Work
-                builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+                //
+                builder.Services.AddScoped<IUserDeactivationStrategy, DoctorDeactivationStrategy>();
+                builder.Services.AddScoped<IUserDeactivationStrategy, PatientDeactivationStrategy>();
+
+
+            // Unit of Work
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Configure Serilog as the logging provider
             builder.Host.UseSerilog();

@@ -78,7 +78,7 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> CreateBill([FromBody] CreateBillCommand createBillCommand)
         {
             logger.LogInformation("Creating new bill");
-            var billId= mediator.Send(createBillCommand);
+            var billId= await mediator.Send(createBillCommand);
 
             logger.LogInformation("Bill created with ID {BillId}", billId);
             return CreatedAtAction(nameof(GetBillById), new { id = billId });
