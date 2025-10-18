@@ -2,7 +2,10 @@
 using ClinicManagement.Application.Commands.Appointments.BookAppointment;
 using ClinicManagement.Application.Commands.Appointments.CancelAppointment;
 using ClinicManagement.Application.Commands.Appointments.UpdateAppointment;
+using ClinicManagement.Application.Commands.Appointments.UpdateAppointmentStatus;
 using ClinicManagement.Application.Interfaces;
+using ClinicManagement.Application.Queries.Appointments.GetAppointmentsByDoctor;
+using ClinicManagement.Application.Queries.Appointments.GetAppointmentsByPatient;
 using ClinicManagement.Domain.DTOs.AppointmentDTOs;
 using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.Enums;
@@ -58,16 +61,15 @@ namespace ClinicManagement.API.Controllers
         {
             logger.LogInformation("Fetching all appointments for doctor with ID {DoctorId}", id);
 
-            var appointments = await unitOfWork.AppointmentRepository.GetAllByDoctorIdAsync(id);
-            if (appointments == null || !appointments.Any())
+            if (string.IsNullOrWhiteSpace(id))
             {
-                logger.LogWarning("No appointments found for doctor with ID {DoctorId}", id);
-                return NotFound("No appointments found for this doctor.");
+                logger.LogWarning("GetAllAppointmentsByDoctorId called with null or empty doctor ID.");
+                return BadRequest("Doctor ID is required.");
             }
+            var appointments=await mediator.Send(new GetAppointmentsByDoctorQuery { DoctorId = id });
 
             logger.LogInformation("Found {Count} appointments for doctor with ID {DoctorId}", appointments.Count(), id);
-            var appointmentDtos = mapper.Map<IEnumerable<AppointmentDto>>(appointments);
-            return Ok(appointmentDtos);
+            return Ok(appointments);
         }
 
         [HttpGet("{id:int}")]
@@ -92,16 +94,16 @@ namespace ClinicManagement.API.Controllers
         {
             logger.LogInformation("Fetching all appointments for patient with ID {PatientId}", id);
 
-            var appointments = await unitOfWork.AppointmentRepository.GetAllByPatientIdAsync(id);
-            if (appointments == null || !appointments.Any())
+            if (string.IsNullOrWhiteSpace(id))
             {
-                logger.LogWarning("No appointments found for patient with ID {PatientId}", id);
-                return NotFound("No appointments found for this patient.");
+                logger.LogWarning("GetAllAppointmentsByPatientId called with null or empty patient ID.");
+                return BadRequest("Patient ID is required.");
             }
 
+            var appointments=await mediator.Send(new GetAppointmentsByPatientQuery { PatientId = id });
+
             logger.LogInformation("Found {Count} appointments for patient with ID {PatientId}", appointments.Count(), id);
-            var appointmentDtos = mapper.Map<IEnumerable<AppointmentDto>>(appointments);
-            return Ok(appointmentDtos);
+            return Ok(appointments);
         }
 
         [HttpPost]
@@ -136,7 +138,7 @@ namespace ClinicManagement.API.Controllers
             await mediator.Send(new CancelAppointmentCommand { Id = appointmentId });
             logger.LogInformation("Appointment with ID {AppointmentId} was cancelled successfully", appointmentId);
 
-            return Ok("Appointment canceled successfully.");
+            return NoContent();
         }
 
         [HttpPut("{id:int}")]
@@ -161,15 +163,7 @@ namespace ClinicManagement.API.Controllers
         {
             logger.LogInformation("Updating status of appointment with ID {AppointmentId} to {Status}", id, status);
 
-            var appointment = await unitOfWork.AppointmentRepository.GetByIdAsync(id);
-            if (appointment == null)
-            {
-                logger.LogWarning("Appointment with ID {AppointmentId} not found for status update", id);
-                return NotFound($"Appointment with ID {id} not found.");
-            }
-            appointment.Status = status;
-            unitOfWork.AppointmentRepository.Update(appointment);
-            await unitOfWork.SaveChangesAsync();
+            await mediator.Send(new UpdateAppointmentStatusCommand { AppointmentId = id, Status = status });
 
             logger.LogInformation("Appointment status updated successfully for ID {AppointmentId}", id);
             return NoContent();

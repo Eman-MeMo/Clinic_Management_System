@@ -46,7 +46,7 @@ namespace ClinicManagement.Infrastructure.Repositories
         }
         public async Task<T> GetByEmailAsync(string email)
         {
-            return await db.Set<T>().AsNoTracking().FirstOrDefaultAsync(p => p.Email == email);
+            return await db.Set<T>().FirstOrDefaultAsync(p => p.Email == email);
         }
     }
 }

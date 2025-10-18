@@ -2,6 +2,7 @@
 using ClinicManagement.Application.Commands.Bills.CreateBill;
 using ClinicManagement.Application.Commands.Bills.MarkBillAsPaid;
 using ClinicManagement.Application.Interfaces;
+using ClinicManagement.Application.Queries.Bills.GetUnpaidBillsByPatient;
 using ClinicManagement.Domain.DTOs.AppointmentDTOs;
 using ClinicManagement.Domain.DTOs.BillDTOs;
 using ClinicManagement.Domain.DTOs.Pagination;
@@ -149,15 +150,10 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Patient ID is required.");
             }
 
-            var unpaidBills = await unitOfWork.BillRepository.GetUnpaidBillsByPatientAsync(patientId);
-            if (unpaidBills == null || !unpaidBills.Any())
-            {
-                logger.LogWarning("No unpaid bills found for patient ID {PatientId}", patientId);
-                return NotFound($"No unpaid bills found for patient ID {patientId}.");
-            }
+            var unpaidBills = await mediator.Send(new GetUnpaidBillsByPatientQuery { PatientId = patientId });
 
             logger.LogInformation("Found {Count} unpaid bills for patient ID {PatientId}", unpaidBills.Count(), patientId);
-            return Ok(mapper.Map<IEnumerable<BillDto>>(unpaidBills));
+            return Ok(unpaidBills);
         }
 
         [HttpGet("session/{sessionId}")]
@@ -189,7 +185,7 @@ namespace ClinicManagement.API.Controllers
             if (billId <= 0)
             {
                 logger.LogWarning("Invalid bill ID: {BillId}", billId);
-                return BadRequest("Invalid bill ID.");
+                return NotFound("Invalid bill ID.");
             }
 
             var result = await mediator.Send(new MarkBillAsPaidCommand { Id = billId });

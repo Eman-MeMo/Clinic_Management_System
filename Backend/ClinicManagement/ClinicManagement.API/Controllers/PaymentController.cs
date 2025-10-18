@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using ClinicManagement.Application.Commands.Payments.CreatePayment;
 using ClinicManagement.Application.Interfaces;
+using ClinicManagement.Application.Queries.Payments.GetPaymentsByDateRange;
+using ClinicManagement.Application.Queries.Payments.GetPaymentsByPatient;
+using ClinicManagement.Application.Queries.Payments.GetPaymentStatus;
 using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.DTOs.PaymentDTOs;
 using MediatR;
@@ -147,15 +150,10 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Invalid patient ID.");
             }
 
-            var payments = await unitOfWork.PaymentRepository.GetByPatientAsync(patientId);
-            if (payments == null || !payments.Any())
-            {
-                logger.LogWarning("No payments found for patient ID {PatientId}", patientId);
-                return NotFound($"No payments found for patient with ID {patientId}.");
-            }
+            var payments = await mediator.Send(new GetPaymentsByPatientQuery { PatientId = patientId });
 
             logger.LogInformation("{Count} payments found for patient ID {PatientId}", payments.Count(), patientId);
-            return Ok(mapper.Map<IEnumerable<PaymentDto>>(payments));
+            return Ok(payments);
         }
 
         [HttpGet("by-date-range")]
@@ -168,15 +166,10 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Start date cannot be after end date.");
             }
 
-            var payments = await unitOfWork.PaymentRepository.GetByDateRangeAsync(start, end);
-            if (payments == null || !payments.Any())
-            {
-                logger.LogWarning("No payments found between {Start} and {End}", start, end);
-                return NotFound("No payments found in the specified date range.");
-            }
+            var payments = await mediator.Send(new GetPaymentsByDateRangeQuery { start = start, end = end });
 
             logger.LogInformation("{Count} payments found in date range", payments.Count());
-            return Ok(mapper.Map<IEnumerable<PaymentDto>>(payments));
+            return Ok(payments);
         }
 
         [HttpGet("status/{billId}")]
@@ -189,7 +182,7 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Invalid bill ID.");
             }
 
-            var isPaid = await unitOfWork.PaymentRepository.GetStatusAsync(billId);
+            var isPaid = await mediator.Send(new GetPaymentStatusQuery { billId = billId });
             logger.LogInformation("Bill ID {BillId} payment status: {Status}", billId, isPaid ? "Paid" : "Unpaid");
             return Ok(new { BillId = billId, IsPaid = isPaid });
         }

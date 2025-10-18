@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using ClinicManagement.Application.Commands.Prescriptions.CreateMedicalRecord;
 using ClinicManagement.Application.Interfaces;
+using ClinicManagement.Application.Queries.MedicalRecords.GetLatestMedicalRecordByPatientId;
+using ClinicManagement.Application.Queries.MedicalRecords.GetMedicalRecordsByDate;
+using ClinicManagement.Application.Queries.MedicalRecords.GetMedicalRecordsByPatientId;
 using ClinicManagement.Domain.DTOs.MedicalRecordDTOs;
 using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.Entities;
@@ -19,13 +22,15 @@ namespace ClinicManagement.API.Controllers
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
+        private readonly IMediator mediator;
         private readonly ILogger<MedicalRecordController> logger;
 
-        public MedicalRecordController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<MedicalRecordController> _logger)
+        public MedicalRecordController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<MedicalRecordController> _logger,IMediator _mediator)
         {
             unitOfWork = _unitOfWork;
             mapper = _mapper;
             logger = _logger;
+            mediator = _mediator;
         }
 
         [HttpGet]
@@ -113,16 +118,10 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Patient ID cannot be null or empty.");
             }
 
-            var records = await unitOfWork.MedicalRecordRepository.GetByPatientIdAsync(patientId);
-            if (records == null || !records.Any())
-            {
-                logger.LogInformation("No medical records found for patient ID {PatientId}", patientId);
-                return NotFound("No medical records found for this patient.");
-            }
+            var records = await mediator.Send(new GetMedicalRecordsByPatientIdQuery { PatientId = patientId });
 
             logger.LogInformation("Fetched {Count} medical records for patient ID {PatientId}", records.Count(), patientId);
-            var mappedRecords = mapper.Map<IEnumerable<MedicalRecordDto>>(records);
-            return Ok(mappedRecords);
+            return Ok(records);
         }
 
         [HttpGet("patient/{patientId}/latest")]
@@ -134,16 +133,10 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Patient ID cannot be null or empty.");
             }
 
-            var record = await unitOfWork.MedicalRecordRepository.GetLatestRecordAsync(patientId);
-            if (record == null)
-            {
-                logger.LogInformation("No latest medical record found for patient ID {PatientId}", patientId);
-                return NotFound("No medical records found for this patient.");
-            }
+            var record = await mediator.Send(new GetLatestMedicalRecordByPatientIdQuery { PatientId = patientId });
 
             logger.LogInformation("Fetched latest medical record with ID {Id} for patient ID {PatientId}", record.Id, patientId);
-            var mappedRecord = mapper.Map<MedicalRecordDto>(record);
-            return Ok(mappedRecord);
+            return Ok(record);
         }
 
         [HttpGet("date/{date}")]
@@ -155,16 +148,10 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Date cannot be in the future.");
             }
 
-            var records = await unitOfWork.MedicalRecordRepository.GetByDateAsync(date);
-            if (records == null || !records.Any())
-            {
-                logger.LogInformation("No medical records found on date {Date}", date);
-                return NotFound("No medical records found for this date.");
-            }
+            var records = await mediator.Send(new GetMedicalRecordsByDateQuery { date = date });
 
             logger.LogInformation("Fetched {Count} medical records on date {Date}", records.Count(), date);
-            var mappedRecords = mapper.Map<IEnumerable<MedicalRecordDto>>(records);
-            return Ok(mappedRecords);
+            return Ok(records);
         }
     }
 }

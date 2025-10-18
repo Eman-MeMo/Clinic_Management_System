@@ -9,7 +9,6 @@ namespace ClinicManagement.Application.Interfaces
 {
     public interface IMedicalRecordRepository:IGenericRepository<MedicalRecord>
     {
-        Task<bool> GetByPatientIdAndDateAsync(string patientId, DateTime date);
         Task<IEnumerable<MedicalRecord>> GetByPatientIdAsync(string patientId);
         Task<MedicalRecord> GetLatestRecordAsync(string patientId);
         Task <IEnumerable<MedicalRecord>> GetByDateAsync(DateTime date);

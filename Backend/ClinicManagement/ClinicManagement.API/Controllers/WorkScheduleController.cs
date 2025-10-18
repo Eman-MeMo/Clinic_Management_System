@@ -1,7 +1,13 @@
 ﻿using AutoMapper;
+using ClinicManagement.Application.Commands.WorkSchedules.CreateWorkSchedule;
+using ClinicManagement.Application.Commands.WorkSchedules.UpdateWorkSchedule;
 using ClinicManagement.Application.Interfaces;
+using ClinicManagement.Application.Queries.WorkSchedules.CheckDoctorAvailability;
+using ClinicManagement.Application.Queries.WorkSchedules.GetScheduleByDoctorAndDay;
+using ClinicManagement.Application.Queries.WorkSchedules.GetWeeklySchedule;
 using ClinicManagement.Domain.DTOs.WorkScheduleDTOs;
 using ClinicManagement.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -15,12 +21,14 @@ namespace ClinicManagement.API.Controllers
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
         private readonly ILogger<WorkScheduleController> logger;
+        private readonly IMediator mediator;
 
-        public WorkScheduleController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<WorkScheduleController> _logger)
+        public WorkScheduleController(IUnitOfWork _unitOfWork, IMapper _mapper, ILogger<WorkScheduleController> _logger,IMediator _mediator)
         {
             unitOfWork = _unitOfWork;
             mapper = _mapper;
             logger = _logger;
+            mediator = _mediator;
         }
 
         [HttpGet]
@@ -54,57 +62,29 @@ namespace ClinicManagement.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateWorkSchedule([FromBody] CreateWorkScheduleDto workScheduleDto)
+        public async Task<IActionResult> CreateWorkSchedule([FromBody] CreateWorkScheduleCommand command)
         {
             logger.LogInformation("Creating a new work schedule...");
-            if (workScheduleDto == null)
-            {
-                logger.LogWarning("Received null work schedule data.");
-                return BadRequest("Work schedule data is null.");
-            }
+           
+            var workScheduleId=await mediator.Send(command);
 
-            if (workScheduleDto.EndTime <= workScheduleDto.StartTime)
-            {
-                logger.LogWarning("Invalid time range: StartTime {Start} - EndTime {End}", workScheduleDto.StartTime, workScheduleDto.EndTime);
-                return BadRequest("End time must be after start time.");
-            }
+            logger.LogInformation("Work schedule created successfully with ID {Id}", workScheduleId);
 
-            var workSchedule = mapper.Map<WorkSchedule>(workScheduleDto);
-            await unitOfWork.WorkScheduleRepository.AddAsync(workSchedule);
-            await unitOfWork.SaveChangesAsync();
-
-            logger.LogInformation("Work schedule created successfully with ID {Id}", workSchedule.Id);
-
-            return CreatedAtAction(nameof(GetWorkScheduleById), new { id = workSchedule.Id }, workScheduleDto);
+            return CreatedAtAction(nameof(GetWorkScheduleById), new { id = workScheduleId });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateWorkSchedule(int id, [FromBody] WorkScheduleDto workScheduleDto)
+        public async Task<IActionResult> UpdateWorkSchedule(int id, UpdateWorkScheduleCommand command)
         {
             logger.LogInformation("Updating work schedule with ID {Id}", id);
 
-            if (workScheduleDto == null || id != workScheduleDto.Id)
+            if (command == null || id != command.Id)
             {
                 logger.LogWarning("Invalid update request. ID mismatch or null DTO.");
                 return BadRequest("Work schedule data is invalid.");
             }
 
-            if (workScheduleDto.EndTime <= workScheduleDto.StartTime)
-            {
-                logger.LogWarning("Invalid time range during update: StartTime {Start} - EndTime {End}", workScheduleDto.StartTime, workScheduleDto.EndTime);
-                return BadRequest("End time must be after start time.");
-            }
-
-            var existingWorkSchedule = await unitOfWork.WorkScheduleRepository.GetByIdAsync(id);
-            if (existingWorkSchedule == null)
-            {
-                logger.LogWarning("Work schedule with ID {Id} not found for update.", id);
-                return NotFound($"Work schedule with ID {id} not found.");
-            }
-
-            var workSchedule = mapper.Map<WorkSchedule>(workScheduleDto);
-            unitOfWork.WorkScheduleRepository.Update(workSchedule);
-            await unitOfWork.SaveChangesAsync();
+            await mediator.Send(command);
 
             logger.LogInformation("Work schedule with ID {Id} updated successfully.", id);
 
@@ -147,14 +127,8 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Invalid day of the week.");
             }
 
-            var workSchedules = await unitOfWork.WorkScheduleRepository.GetScheduleByDoctorAndDayAsync(doctorId, dayOfWeek);
-            if (workSchedules == null || !workSchedules.Any())
-            {
-                logger.LogWarning("No work schedules found for doctor {DoctorId} on {Day}", doctorId, dayOfWeek);
-                return NotFound($"No work schedules found for doctor {doctorId} on {dayOfWeek}.");
-            }
-
-            logger.LogInformation("Found {Count} work schedules for doctor {DoctorId} on {Day}", workSchedules.Count(), doctorId, dayOfWeek);
+            var workSchedules = await mediator.Send(new GetScheduleByDoctorAndDayQuery { DoctorId = doctorId, Day = dayOfWeek });
+            logger.LogInformation("Schedule for doctor {DoctorId} on {Day} retrieved successfully.", doctorId, dayOfWeek);
 
             var workScheduleDtos = mapper.Map<IEnumerable<WorkScheduleDto>>(workSchedules);
             return Ok(workScheduleDtos);
@@ -171,12 +145,7 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Doctor ID cannot be null or empty.");
             }
 
-            var workSchedules = await unitOfWork.WorkScheduleRepository.GetWeeklyScheduleAsync(doctorId);
-            if (workSchedules == null || !workSchedules.Any())
-            {
-                logger.LogWarning("No weekly schedule found for doctor {DoctorId}.", doctorId);
-                return NotFound($"No weekly schedule found for doctor {doctorId}.");
-            }
+            var workSchedules = await mediator.Send(new GetWeeklyScheduleQuery { DoctorId = doctorId });
 
             logger.LogInformation("Weekly schedule for doctor {DoctorId} retrieved successfully.", doctorId);
 
@@ -201,7 +170,11 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Invalid date and time.");
             }
 
-            var isAvailable = await unitOfWork.WorkScheduleRepository.CheckAvailabilityAsync(doctorId, dateTime);
+            var isAvailable = await mediator.Send(new CheckDoctorAvailabilityQuery
+            {
+                DoctorId = doctorId,
+                AppointmentDateTime = dateTime
+            });
 
             logger.LogInformation("Doctor {DoctorId} availability at {DateTime}: {IsAvailable}", doctorId, dateTime, isAvailable);
 

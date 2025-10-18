@@ -45,7 +45,7 @@ namespace ClinicManagement.Infrastructure.Repositories
 
         public async Task<Attendance> GetByPatientIdAndDateAsync(string patientId, DateTime date)
         {
-            return await db.Attendances.AsNoTracking()
+            return await db.Attendances
                 .Include(a => a.Session)
                 .ThenInclude(s => s.Appointment)
                 .FirstOrDefaultAsync(a =>
@@ -67,7 +67,7 @@ namespace ClinicManagement.Infrastructure.Repositories
 
         public async Task<Attendance> GetBySessionIdAsync(int sessionId)
         {
-            return await db.Attendances.AsNoTracking().FirstOrDefaultAsync(a => a.SessionId == sessionId);
+            return await db.Attendances.FirstOrDefaultAsync(a => a.SessionId == sessionId);
         }
     }
 }

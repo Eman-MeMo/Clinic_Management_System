@@ -17,7 +17,7 @@ namespace ClinicManagement.Infrastructure.Repositories
         }
         public Task<bool> CheckAvailabilityAsync(string doctorId, DateTime day)
         {
-            return db.WorkSchedules.AsNoTracking()
+            return db.WorkSchedules
                 .Where(ws => ws.DoctorId == doctorId && ws.DayOfWeek == day.DayOfWeek &&
                              ws.IsAvailable &&
                              day.TimeOfDay >= ws.StartTime.TimeOfDay &&

@@ -30,12 +30,12 @@ namespace ClinicManagement.Infrastructure.Repositories
 
         public async Task<bool> ExistsAsync(int sessionId, int serviceId)
         {
-            return await db.Set<SessionService>().AsNoTracking()
+            return await db.Set<SessionService>()
                            .AnyAsync(ss => ss.SessionId == sessionId && ss.ServiceId == serviceId);
         }
         public async Task<SessionService> GetByIdAsync(int sessionId, int serviceId)
         {
-            return await db.Set<SessionService>().AsNoTracking()
+            return await db.Set<SessionService>()
                            .FirstOrDefaultAsync(ss => ss.SessionId == sessionId && ss.ServiceId == serviceId);
         }
 

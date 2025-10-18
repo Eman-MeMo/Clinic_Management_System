@@ -60,17 +60,17 @@ namespace ClinicManagement.Infrastructure.Repositories
         }
         public async Task<bool> HasSessionForAppointmentAsync(int appointmentId)
         {
-            return await db.Sessions.AsNoTracking().AnyAsync(s => s.AppointmentId == appointmentId);
+            return await db.Sessions.AnyAsync(s => s.AppointmentId == appointmentId);
         }
 
         public IQueryable<Session> GetSessionsByDoctorAsAsQueryable(string doctorId)
         {
-            return db.Set<Session>().AsNoTracking().Where(s => s.DoctorId == doctorId);
+            return db.Set<Session>().Where(s => s.DoctorId == doctorId);
         }
 
         public IQueryable<Session> GetSessionsByPatientAsQueryable(string patientId)
         {
-            return db.Set<Session>().AsNoTracking().Where(s => s.PatientId == patientId);
+            return db.Set<Session>().Where(s => s.PatientId == patientId);
         }
     }
 }
