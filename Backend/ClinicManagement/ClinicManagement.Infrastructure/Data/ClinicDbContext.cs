@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +13,48 @@ namespace ClinicManagement.Infrastructure.Data
 {
     public class ClinicDbContext : IdentityDbContext<AppUser>
     {
-        public ClinicDbContext(DbContextOptions<ClinicDbContext> options) : base(options)
+        private readonly ILogger<ClinicDbContext> logger;
+        public ClinicDbContext(DbContextOptions<ClinicDbContext> options, ILogger<ClinicDbContext> _logger) : base(options)
         {
+            logger = _logger;
+        }
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                // Get all tracked changes
+                var entries = ChangeTracker.Entries()
+                    .Where(e => e.State == EntityState.Added ||
+                                e.State == EntityState.Modified ||
+                                e.State == EntityState.Deleted);
 
+                foreach (var entry in entries)
+                {
+                    string action = entry.State.ToString();
+                    string entityName = entry.Entity.GetType().Name;
+
+                    logger.LogInformation($"Entity: {entityName}, Action: {action}, Time: {DateTime.Now}");
+
+                    if (entry.State == EntityState.Modified)
+                    {
+                        foreach (var prop in entry.OriginalValues.Properties)
+                        {
+                            var original = entry.OriginalValues[prop];
+                            var current = entry.CurrentValues[prop];
+                            if (!Equals(original, current))
+                            {
+                                logger.LogInformation($"Property {prop.Name}: {original} => {current}");
+                            }
+                        }
+                    }
+                }
+                return await base.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error occurred during SaveChanges()");
+                throw;
+            }
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
