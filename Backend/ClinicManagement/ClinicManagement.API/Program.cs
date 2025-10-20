@@ -15,6 +15,9 @@ using MediatR;
 using ClinicManagement.Application.Commands.Appointments.BookAppointment;
 using FluentValidation;
 using ClinicManagement.Application.Strategies;
+using ClinicManagement.Application.Services;
+using ClinicManagement.Infrastructure.Services;
+using ClinicManagement.API.Middlewares;
 
 namespace ClinicManagement.API
 {
@@ -108,9 +111,17 @@ namespace ClinicManagement.API
                 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
                 builder.Services.AddScoped<ISessionServiceRepository, SessionServiceRepository>();
                 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+                builder.Services.AddScoped<IDoctorAvailabilityService, DoctorAvailabilityService>();
+                builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+                builder.Services.AddScoped<IAccountService, AccountService>();
+                builder.Services.AddScoped<ISessionService, SessionManagementService>();
+                builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
+                builder.Services.AddScoped<IPaymentService, PaymentService>();
+                builder.Services.AddScoped<IBillingService, BillingService>();
+                builder.Services.AddScoped<DoctorAvailabilityService>();
                 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-                //
+                // For Stragegy Pattern
                 builder.Services.AddScoped<IUserDeactivationStrategy, DoctorDeactivationStrategy>();
                 builder.Services.AddScoped<IUserDeactivationStrategy, PatientDeactivationStrategy>();
 
@@ -122,6 +133,9 @@ namespace ClinicManagement.API
             builder.Host.UseSerilog();
 
             var app = builder.Build();
+
+            // Global exception handler middleware
+            app.UseMiddleware<ExceptionMiddleware>();
 
             if (app.Environment.IsDevelopment())
             {

@@ -20,7 +20,7 @@ namespace ClinicManagement.Application.Queries.Payments.GetPaymentStatus
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            return await unitOfWork.PaymentRepository.GetStatusAsync(request.Id);
+            return await unitOfWork.PaymentRepository.GetStatusAsync(request.billId);
         }
     }
 }
