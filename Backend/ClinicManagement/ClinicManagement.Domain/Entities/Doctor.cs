@@ -9,9 +9,6 @@ namespace ClinicManagement.Domain.Entities
 {
     public class Doctor:AppUser
     {
-
-        public bool IsAvaible { get; set; }
-
         [ForeignKey("Specialization")]
         public int SpecializationId { get; set; }
         public Specialization Specialization { get; set; }

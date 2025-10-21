@@ -30,6 +30,7 @@ namespace ClinicManagement.Application.Services
             var medicalRecord = new MedicalRecord
             {
                 PatientId = prescription.Session.PatientId,
+                DoctorId = prescription.Session.DoctorId,
                 Date = prescription.Session.Appointment.Date.Date,
                 Notes = Notes,
                 Diagnosis = Diagnosis

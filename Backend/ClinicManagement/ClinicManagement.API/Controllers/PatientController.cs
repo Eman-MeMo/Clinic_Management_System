@@ -54,7 +54,6 @@ namespace ClinicManagement.API.Controllers
             var patient = await patientService.GetByIdAsync(id);
             if (patient == null)
             {
-                logger.LogWarning("Patient with ID {Id} not found.", id);
                 return NotFound($"Patient with ID {id} not found.");
             }
 
