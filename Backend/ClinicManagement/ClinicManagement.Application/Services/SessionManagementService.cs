@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Infrastructure.Services
 {
-    public class SessionManagementService:ISessionService
+    public class SessionManagementService:ISessionManagementService
     {
         private readonly IUnitOfWork unitOfWork;
         public SessionManagementService(IUnitOfWork _unitOfWork)

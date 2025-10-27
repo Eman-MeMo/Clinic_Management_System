@@ -33,7 +33,7 @@ namespace ClinicManagement.Infrastructure.Data.Configurations
                     BillId = 3,
                     Amount = 600,
                     Date = new DateTime(2025, 10, 19),
-                    PaymentMethod = PaymentMethod.Visa
+                    PaymentMethod = PaymentMethod.BankTransfer
                 }
             );
         }

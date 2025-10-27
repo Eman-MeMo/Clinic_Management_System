@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Interfaces
 {
-    public interface ISessionService
+    public interface ISessionManagementService
     {
         Task EndSessionAsync(int sessionId, SessionStatus status);
         Task<int> StartSessionAsync(int appointmentId);

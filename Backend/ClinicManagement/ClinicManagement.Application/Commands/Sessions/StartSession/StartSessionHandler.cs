@@ -10,8 +10,8 @@ namespace ClinicManagement.Application.Commands.Sessions.StartSession
 {
     public class StartSessionHandler : IRequestHandler<StartSessionCommand, int>
     {
-        private readonly ISessionService sessionService;
-        public StartSessionHandler(ISessionService _sessionService) {
+        private readonly ISessionManagementService sessionService;
+        public StartSessionHandler(ISessionManagementService _sessionService) {
             sessionService = _sessionService;
         }
         public async Task<int> Handle(StartSessionCommand request, CancellationToken cancellationToken)

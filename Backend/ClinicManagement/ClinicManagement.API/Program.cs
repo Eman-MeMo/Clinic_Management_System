@@ -114,7 +114,7 @@ namespace ClinicManagement.API
                 builder.Services.AddScoped<IDoctorAvailabilityService, DoctorAvailabilityService>();
                 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
                 builder.Services.AddScoped<IAccountService, AccountService>();
-                builder.Services.AddScoped<ISessionService, SessionManagementService>();
+                builder.Services.AddScoped<ISessionManagementService, SessionManagementService>();
                 builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
                 builder.Services.AddScoped<IPaymentService, PaymentService>();
                 builder.Services.AddScoped<IBillingService, BillingService>();

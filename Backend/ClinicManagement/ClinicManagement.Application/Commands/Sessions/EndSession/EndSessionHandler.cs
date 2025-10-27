@@ -10,8 +10,8 @@ namespace ClinicManagement.Application.Commands.Sessions.EndSession
 {
     public class EndSessionHandler:IRequestHandler<EndSessionCommand, Unit>
     {
-        private readonly ISessionService sessionService;
-        public EndSessionHandler(ISessionService _sessionService) {
+        private readonly ISessionManagementService sessionService;
+        public EndSessionHandler(ISessionManagementService _sessionService) {
             sessionService = _sessionService;
         }
         public async Task<Unit> Handle(EndSessionCommand request, CancellationToken cancellationToken)
