@@ -19,6 +19,10 @@ namespace ClinicManagement.Application.Services
         }
         public async Task<Patient> GetByNationalIdAsync(string nationId)
         {
+            if (string.IsNullOrWhiteSpace(nationId))
+            {
+                throw new ArgumentNullException(nameof(nationId));
+            }
             return await patientRepository.GetByNationalIdAsync(nationId);
         }
     }

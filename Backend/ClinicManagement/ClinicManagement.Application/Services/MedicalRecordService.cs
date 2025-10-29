@@ -25,7 +25,7 @@ namespace ClinicManagement.Application.Services
                 .SingleOrDefaultAsync(p => p.Id == prescriptionId);
 
             if (prescription == null || prescription.Session == null || prescription.Session.Appointment == null)
-                throw new Exception("Prescription or related session/appointment not found.");
+                throw new InvalidOperationException("Prescription or related session/appointment not found.");
 
             var medicalRecord = new MedicalRecord
             {

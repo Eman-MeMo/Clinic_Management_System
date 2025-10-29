@@ -20,6 +20,10 @@ namespace ClinicManagement.Application.Services
 
         public async Task<IEnumerable<Doctor>> GetDoctorsBySpecializationAsync(int specializationId)
         {
+            if (specializationId <= 0)
+            {
+                throw new ArgumentException("Specialization ID must be a positive integer.", nameof(specializationId));
+            }
             return await doctorRepository.GetAllBySpecializationAsync(specializationId);
         }
     }

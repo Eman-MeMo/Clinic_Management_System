@@ -35,6 +35,7 @@ namespace ClinicManagement.Test
             _service = new BillingService(_unitOfWorkMock.Object);
         }
 
+        #region MarkAsPaidAsync Tests
         [Fact]
         public async Task MarkAsPaidAsync_BillNotFound_ReturnsFalse()
         {
@@ -83,7 +84,8 @@ namespace ClinicManagement.Test
             Assert.True(bill.IsPaid);
             _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
         }
-
+        #endregion
+        #region CreateBillAsync Tests
         [Fact]
         public async Task CreateBillAsync_PatientNotFound_ThrowsException()
         {
@@ -129,5 +131,6 @@ namespace ClinicManagement.Test
             _billRepoMock.Verify(r => r.AddAsync(It.IsAny<Bill>()), Times.Once);
             _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
         }
+        #endregion
     }
 }

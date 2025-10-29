@@ -28,8 +28,7 @@ namespace ClinicManagement.Test
 
             _service = new SessionManagementService(_unitOfWorkMock.Object);
         }
-
-        // ===================== EndSessionAsync =====================
+        #region EndSessionAsync Tests
         [Fact]
         public async Task EndSessionAsync_SessionNotFound_ThrowsException()
         {
@@ -68,8 +67,9 @@ namespace ClinicManagement.Test
             _appointmentRepoMock.Verify(r => r.Update(session.Appointment), Times.Once);
             _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
         }
+        #endregion
 
-        // ===================== StartSessionAsync =====================
+        #region StartSessionAsync Tests
         [Fact]
         public async Task StartSessionAsync_AppointmentNotFound_ThrowsException()
         {
@@ -125,5 +125,6 @@ namespace ClinicManagement.Test
             Assert.Equal(100, sessionId);
             _sessionRepoMock.Verify(r => r.CreateSessionAsync(1), Times.Once);
         }
+        #endregion
     }
 }

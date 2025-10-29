@@ -35,7 +35,7 @@ namespace ClinicManagement.Test
 
             _service = new DoctorAvailabilityService(_unitOfWorkMock.Object);
         }
-
+        #region IsDoctorAvailableAsync Tests
         [Fact]
         public async Task IsDoctorAvailableAsync_DoctorNotWorking_ReturnsFalse()
         {
@@ -99,7 +99,9 @@ namespace ClinicManagement.Test
 
             Assert.True(result);
         }
+        #endregion
 
+        #region GetAvailableDoctorsAtAsync Tests
         [Fact]
         public async Task GetAvailableDoctorsAtAsync_ReturnsOnlyAvailableDoctors_InMemory()
         {
@@ -107,11 +109,11 @@ namespace ClinicManagement.Test
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
-            using (var context = new ClinicDbContext(options, null)) // pass null if your constructor needs IConfiguration
+            using (var context = new ClinicDbContext(options, null)) 
             {
                 var targetTime = DateTime.Today.AddHours(10);
 
-                // Create doctors
+
                 var doctor1 = new Doctor
                 {
                     Id = "D1",
@@ -119,15 +121,15 @@ namespace ClinicManagement.Test
                     LastName = "Doe",
                     IsAvaible = true,
                     WorkSchedules = new List<WorkSchedule>
-    {
-        new WorkSchedule
-        {
-            IsAvailable = true,
-            DayOfWeek = targetTime.DayOfWeek,
-            StartTime = targetTime.Date.AddHours(9),
-            EndTime = targetTime.Date.AddHours(17)
-        }
-    },
+                    {
+                        new WorkSchedule
+                        {
+                            IsAvailable = true,
+                            DayOfWeek = targetTime.DayOfWeek,
+                            StartTime = targetTime.Date.AddHours(9),
+                            EndTime = targetTime.Date.AddHours(17)
+                        }
+                    },
                     Appointments = new List<Appointment>()
                 };
 
@@ -161,7 +163,6 @@ namespace ClinicManagement.Test
                 context.Doctors.AddRange(doctor1, doctor2, doctor3);
                 context.SaveChanges();
 
-                // Use real UnitOfWork with DbContext
                 var unitOfWork = new UnitOfWork(context);
                 var service = new DoctorAvailabilityService(unitOfWork);
 
@@ -171,5 +172,6 @@ namespace ClinicManagement.Test
                 Assert.Equal("D1", result.First().Id);
             }
         }
+        #endregion
     }
 }
