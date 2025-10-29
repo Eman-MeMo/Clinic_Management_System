@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClinicManagement.Test
+namespace ClinicManagement.Test.Services
 {
     public class PatientServiceTest
     {

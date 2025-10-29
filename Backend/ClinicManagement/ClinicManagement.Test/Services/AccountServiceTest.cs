@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using ClinicManagement.Domain.Enums;
 using System.Reflection;
 
-namespace ClinicManagement.Test
+namespace ClinicManagement.Test.Services
 {
     public class AccountServiceTest
     {

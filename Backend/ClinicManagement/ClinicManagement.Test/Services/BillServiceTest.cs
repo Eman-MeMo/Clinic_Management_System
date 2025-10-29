@@ -8,7 +8,7 @@ using System.Linq;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Infrastructure.Repositories;
 
-namespace ClinicManagement.Test
+namespace ClinicManagement.Test.Services
 {
     public class BillingServiceTest
     {

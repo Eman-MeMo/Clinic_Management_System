@@ -8,7 +8,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace ClinicManagement.Test
+namespace ClinicManagement.Test.Services
 {
     public class SessionManagementServiceTest
     {

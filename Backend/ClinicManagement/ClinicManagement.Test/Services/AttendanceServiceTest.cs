@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using ClinicManagement.Infrastructure.Data;
 using ClinicManagement.Infrastructure.Repositories;
 
-namespace ClinicManagement.Test
+namespace ClinicManagement.Test.Services
 {
 
 

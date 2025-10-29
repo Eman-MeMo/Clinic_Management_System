@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 using ClinicManagement.Infrastructure.Repositories;
 
-namespace ClinicManagement.Test
+namespace ClinicManagement.Test.Services
 {
     public class PaymentServiceTest
     {

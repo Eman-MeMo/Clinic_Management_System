@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace ClinicManagement.Test
+namespace ClinicManagement.Test.Services
 {
     public class DoctorServiceTest
     {
