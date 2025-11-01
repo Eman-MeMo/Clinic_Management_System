@@ -18,7 +18,8 @@ namespace ClinicManagement.Application.Commands.Users.RegisterAdmin
                 .MaximumLength(50).WithMessage("Last name can't be longer than 50 characters.");
             RuleFor(x => x.PhoneNumber)
                 .NotEmpty().WithMessage("Phone number is required.")
-                .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format.");
+                .Matches(@"^\+?[1-9]\d{7,14}$").WithMessage("Invalid phone number format.");
+
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")
                 .EmailAddress().WithMessage("Invalid email address.");

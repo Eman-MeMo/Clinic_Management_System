@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Commands.WorkSchedules.UpdateWorkSchedule
 {
-    internal class UpdateWorkScheduleHandler:IRequestHandler<UpdateWorkScheduleCommand, Unit>
+    public class UpdateWorkScheduleHandler:IRequestHandler<UpdateWorkScheduleCommand, Unit>
     {
         private readonly IUnitOfWork unitOfWork;
         public UpdateWorkScheduleHandler(IUnitOfWork _unitOfWork)

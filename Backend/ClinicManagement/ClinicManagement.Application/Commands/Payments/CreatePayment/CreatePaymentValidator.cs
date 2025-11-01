@@ -14,13 +14,17 @@ namespace ClinicManagement.Application.Commands.Payments.CreatePayment
                 .GreaterThan(0).WithMessage("Amount must be greater than zero.");
 
             RuleFor(x => x.Date)
-                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Date cannot be in the future.");
+            .LessThanOrEqualTo(_ => DateTime.UtcNow)
+            .WithMessage("Date cannot be in the future.");
+
 
             RuleFor(x => x.BillId)
                 .GreaterThan(0).WithMessage("Bill ID must be a positive integer.");
 
             RuleFor(x => x.PaymentMethod)
-                .NotEmpty().WithMessage("Payment Method is required.");
+            .IsInEnum().WithMessage("Invalid payment method selected.");
+
+
 
         }
     }

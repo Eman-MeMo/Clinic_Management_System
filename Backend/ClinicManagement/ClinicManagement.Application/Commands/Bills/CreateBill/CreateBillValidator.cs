@@ -18,9 +18,6 @@ namespace ClinicManagement.Application.Commands.Bills.CreateBill
                 .NotEmpty().WithMessage("Date is required.")
                 .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Date cannot be in the future.");
 
-            RuleFor(b => b.IsPaid)
-                .NotNull().WithMessage("Payment status is required.");
-
             RuleFor(b => b.SessionId)
                 .GreaterThan(0).WithMessage("Session ID must be a positive number.");
 

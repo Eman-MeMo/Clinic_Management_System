@@ -16,6 +16,9 @@ namespace ClinicManagement.Application.Commands.Sessions.StartSession
         }
         public async Task<int> Handle(StartSessionCommand request, CancellationToken cancellationToken)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
             return await sessionService.StartSessionAsync(request.AppointmentId);
         }
     }

@@ -18,7 +18,7 @@ namespace ClinicManagement.Application.Commands.Users.RegisterPatient
                 .MaximumLength(50).WithMessage("Last name can't be longer than 50 characters.");
             RuleFor(x => x.PhoneNumber)
                 .NotEmpty().WithMessage("Phone number is required.")
-                .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number.");
+                .Matches(@"^\+?[1-9]\d{7,14}$").WithMessage("Invalid phone number format.");
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")
                 .EmailAddress().WithMessage("Invalid email format.");
@@ -35,7 +35,7 @@ namespace ClinicManagement.Application.Commands.Users.RegisterPatient
                 .NotEmpty().WithMessage("Date of birth is required.")
                 .LessThan(DateOnly.FromDateTime(DateTime.Now)).WithMessage("Date of birth must be in the past.");
             RuleFor(x => x.gender)
-                .NotEmpty().WithMessage("Gender is required.");
+                .IsInEnum().WithMessage("Gender is required.");
         }
     }
 }

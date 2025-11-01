@@ -16,6 +16,9 @@ namespace ClinicManagement.Application.Commands.Sessions.EndSession
         }
         public async Task<Unit> Handle(EndSessionCommand request, CancellationToken cancellationToken)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
             await sessionService.EndSessionAsync(request.SessionId, request.Status);
             return Unit.Value;
         }

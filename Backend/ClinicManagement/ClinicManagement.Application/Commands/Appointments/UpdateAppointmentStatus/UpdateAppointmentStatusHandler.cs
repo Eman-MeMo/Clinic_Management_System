@@ -23,6 +23,10 @@ namespace ClinicManagement.Application.Commands.Appointments.UpdateAppointmentSt
                 throw new ArgumentNullException(nameof(request));
             }
             var appointment = await unitOfWork.AppointmentRepository.GetByIdAsync(request.AppointmentId);
+            if (appointment == null)
+            {
+                throw new KeyNotFoundException($"Appointment with ID {request.AppointmentId} not found.");
+            }
             appointment.Status = request.Status;
             unitOfWork.AppointmentRepository.Update(appointment);
             await unitOfWork.SaveChangesAsync();
