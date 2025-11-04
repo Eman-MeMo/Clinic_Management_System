@@ -19,13 +19,13 @@ namespace ClinicManagement.Application.Queries.Users.Patient.GetPatientByNationa
             unitOfWork = _unitOfWork;
             mapper = _mapper;
         }
-        public Task<PatientDto> Handle(GetPatientByNationalIdQuery request, CancellationToken cancellationToken)
+        public async Task<PatientDto> Handle(GetPatientByNationalIdQuery request, CancellationToken cancellationToken)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var patient = unitOfWork.PatientRepository.GetByNationalIdAsync(request.NationalId);
-            return mapper.Map<Task<PatientDto>>(patient);
+            var patient = await unitOfWork.PatientRepository.GetByNationalIdAsync(request.NationalId);
+            return mapper.Map<PatientDto>(patient);
         }
     }
 }

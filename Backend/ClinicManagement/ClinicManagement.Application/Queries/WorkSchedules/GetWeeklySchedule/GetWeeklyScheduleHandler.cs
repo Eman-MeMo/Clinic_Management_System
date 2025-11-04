@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Queries.WorkSchedules.GetWeeklySchedule
 {
-    public class GetWeeklyScheduleHandler : IRequestHandler<GetWeeklyScheduleQuery, WorkScheduleDto>
+    public class GetWeeklyScheduleHandler : IRequestHandler<GetWeeklyScheduleQuery, IEnumerable<WorkScheduleDto>>
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
@@ -19,13 +19,17 @@ namespace ClinicManagement.Application.Queries.WorkSchedules.GetWeeklySchedule
             unitOfWork = _unitOfWork;
             mapper = _mapper;
         }
-        public async Task<WorkScheduleDto> Handle(GetWeeklyScheduleQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<WorkScheduleDto>> Handle(GetWeeklyScheduleQuery request, CancellationToken cancellationToken)
         {
             if(request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var workSchedule = await unitOfWork.WorkScheduleRepository.GetWeeklyScheduleAsync(request.DoctorId);
-            return mapper.Map<WorkScheduleDto>(workSchedule);
+            var workSchedules = await unitOfWork.WorkScheduleRepository.GetWeeklyScheduleAsync(request.DoctorId);
+
+            if(workSchedules == null)
+                return Enumerable.Empty<WorkScheduleDto>();
+
+            return mapper.Map<IEnumerable<WorkScheduleDto>>(workSchedules);
 
         }
     }

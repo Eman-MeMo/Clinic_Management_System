@@ -12,9 +12,9 @@ namespace ClinicManagement.Application.Queries.WorkSchedules.CheckDoctorAvailabi
 {
     public class CheckDoctorAvailabilityHandler:IRequestHandler<CheckDoctorAvailabilityQuery, bool>
     {
-        private readonly DoctorAvailabilityService doctorAvailabilityService;
+        private readonly IDoctorAvailabilityService doctorAvailabilityService;
         private readonly IMapper mapper;
-        public CheckDoctorAvailabilityHandler(DoctorAvailabilityService _doctorAvailabilityService, IMapper _mapper)
+        public CheckDoctorAvailabilityHandler(IDoctorAvailabilityService _doctorAvailabilityService, IMapper _mapper)
         {
             doctorAvailabilityService = _doctorAvailabilityService;
             mapper = _mapper;

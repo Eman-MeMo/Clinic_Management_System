@@ -23,14 +23,12 @@ namespace ClinicManagement.Test.Commands.Attendances
         [Fact]
         public async Task Handle_ShouldThrowArgumentNullException_WhenRequestIsNull()
         {
-            // Act & Assert
             await Assert.ThrowsAsync<ArgumentNullException>(() => _handler.Handle(null, CancellationToken.None));
         }
 
         [Fact]
         public async Task Handle_ShouldThrowArgumentException_WhenSessionIdIsLessThan1()
         {
-            // Arrange
             var command = new MarkAbsentCommand
             {
                 SessionId = 0,
@@ -38,7 +36,6 @@ namespace ClinicManagement.Test.Commands.Attendances
                 Notes = "Absent"
             };
 
-            // Act & Assert
             var ex = await Assert.ThrowsAsync<ArgumentException>(() => _handler.Handle(command, CancellationToken.None));
             Assert.Equal("Session ID cannot be less than 1.", ex.Message);
         }
@@ -46,7 +43,6 @@ namespace ClinicManagement.Test.Commands.Attendances
         [Fact]
         public async Task Handle_ShouldReturnResult_WhenValidRequest()
         {
-            // Arrange
             var command = new MarkAbsentCommand
             {
                 SessionId = 2,

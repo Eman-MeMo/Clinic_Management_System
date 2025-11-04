@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Queries.WorkSchedules.GetScheduleByDoctorAndDay
 {
-    public class GetScheduleByDoctorAndDayQuery:IRequest<WorkScheduleDto>
+    public class GetScheduleByDoctorAndDayQuery:IRequest<IEnumerable<WorkScheduleDto>>
     {
         public string DoctorId { get; set; }
         public DayOfWeek Day { get; set; }
