@@ -22,10 +22,10 @@ namespace ClinicManagement.Infrastructure.Repositories
         private IMedicalRecordRepository MedicalRecordRepo;
         private IPaymentRepository PaymentRepo;
         private IPrescriptionRepository PrescriptionRepo;
-        private IGenericRepository<Service> ServiceRepo;
+        private IServiceRepository ServiceRepo;
         private ISessionServiceRepository SessionServiceRepo;
         private ISessionRepository SessionRepo;
-        private IGenericRepository<Specialization> SpecializationRepo;
+        private ISpecializationRepository SpecializationRepo;
         private IWorkScheduleRepository WorkScheduleRepo;
 
         public UnitOfWork(ClinicDbContext context)
@@ -116,12 +116,12 @@ namespace ClinicManagement.Infrastructure.Repositories
             }
         }
 
-        public IGenericRepository<Service> ServiceRepository
+        public IServiceRepository ServiceRepository
         {
             get
             {
                 if (ServiceRepo == null)
-                    ServiceRepo = new GenericRepository<Service>(db);
+                    ServiceRepo = new ServiceRepository(db);
                 return ServiceRepo;
             }
         }
@@ -144,12 +144,12 @@ namespace ClinicManagement.Infrastructure.Repositories
                 return SessionServiceRepo;
             }
         }
-        public IGenericRepository<Specialization> SpecializationRepository
+        public ISpecializationRepository SpecializationRepository
         {
             get
             {
                 if (SpecializationRepo == null)
-                    SpecializationRepo = new GenericRepository<Specialization>(db);
+                    SpecializationRepo = new SpecializationRepository(db);
                 return SpecializationRepo;
             }
         }

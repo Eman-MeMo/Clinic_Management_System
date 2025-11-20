@@ -70,12 +70,17 @@ namespace ClinicManagement.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAttendance([FromBody] CreateAppointmentDto attendanceDto)
+        public async Task<IActionResult> CreateAttendance([FromBody] CreateAttendaceDto attendanceDto)
         {
             var attendance = mapper.Map<Attendance>(attendanceDto);
+            var patientSessions = await unitOfWork.SessionRepository.GetSessionsByPatient(attendanceDto.PatientId); 
+            if (!patientSessions.Any(s => s.Id == attendanceDto.SessionId)) 
+            {
+                return BadRequest("The session does not belong to this patient or does not exist.");
+            }
             await unitOfWork.AttendanceRepository.AddAsync(attendance);
             await unitOfWork.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetAttendanceById), new { id = attendance.Id }, mapper.Map<AttendanceDto>(attendance));
+            return CreatedAtAction(nameof(GetAttendanceById), new { id = attendance.Id }, attendance);
         }
 
         [HttpPut("{id}")]
@@ -165,8 +170,8 @@ namespace ClinicManagement.API.Controllers
             return Ok(attendanceDto);
         }
 
-        [HttpGet("absent-patients")]
-        public async Task<IActionResult> GetAbsentPatientsByDate([FromQuery] DateTime date)
+        [HttpGet("absent-patients/{date}")]
+        public async Task<IActionResult> GetAbsentPatientsByDate(DateTime date)
         {
             if (date > DateTime.Now)
                 return BadRequest("Invalid date!");
@@ -183,22 +188,14 @@ namespace ClinicManagement.API.Controllers
         [HttpPut("mark-absent")]
         public async Task<IActionResult> MarkAttendanceAsAbsent([FromBody] MarkAbsentCommand command)
         {
-            var result = await mediator.Send(command);
-            if (result == 0)
-            {
-                return BadRequest("Failed to mark attendance as absent.");
-            }
-            return Ok(new { AttendanceId = result });
+            await mediator.Send(command);
+            return Ok("Attendance Status Updated to Absent");
         }
         [HttpPut("mark-present")]
         public async Task<IActionResult> MarkAttendanceAsPresent([FromBody] MarkPresentCommand command)
         {
-            var result = await mediator.Send(command);
-            if (result == 0)
-            {
-                return BadRequest("Failed to mark attendance as present.");
-            }
-            return Ok(new { AttendanceId = result });
+            await mediator.Send(command);
+            return Ok("Attendance Status Updated to Present");
         }
         [HttpGet("daily-summary")]
         public async Task<IActionResult> GetDailySummaryReport([FromQuery] DateTime date)

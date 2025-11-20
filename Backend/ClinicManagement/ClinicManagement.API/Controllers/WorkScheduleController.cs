@@ -55,9 +55,12 @@ namespace ClinicManagement.API.Controllers
 
         [HttpPost]
         public async Task<IActionResult> CreateWorkSchedule([FromBody] CreateWorkScheduleCommand command)
-        {           
+        {      
+            if(command==null)
+                return BadRequest("Work schedule data is invalid.");
+
             var workScheduleId=await mediator.Send(command);
-            return CreatedAtAction(nameof(GetWorkScheduleById), new { id = workScheduleId });
+            return CreatedAtAction(nameof(GetWorkScheduleById), new { id = workScheduleId },command);
         }
 
         [HttpPut("{id}")]

@@ -13,6 +13,7 @@ namespace ClinicManagement.Domain.DTOs.SessionDTOs
 {
     public class SessionDto
     {
+        public int Id { set; get; }
         public DateTime? ActualStartTime { get; set; }
         public DateTime? ActualEndTime { get; set; }
         [EnumDataType(typeof(SessionStatus))]

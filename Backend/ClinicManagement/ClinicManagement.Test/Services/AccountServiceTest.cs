@@ -37,7 +37,7 @@ namespace ClinicManagement.Test.Services
             _userManagerMock.Setup(x => x.CheckPasswordAsync(user, "password")).ReturnsAsync(true);
             _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "Patient" });
 
-            var service = new AccountService(_userManagerMock.Object, null, _configMock.Object);
+            var service = new AccountService(_userManagerMock.Object, _configMock.Object);
 
             var result = await service.LoginAsync("test@test.com", "password");
 
@@ -53,7 +53,7 @@ namespace ClinicManagement.Test.Services
             _userManagerMock.Setup(x => x.FindByEmailAsync("test@test.com")).ReturnsAsync(user);
             _userManagerMock.Setup(x => x.CheckPasswordAsync(user, "wrongpassword")).ReturnsAsync(false);
 
-            var service = new AccountService(_userManagerMock.Object, null, _configMock.Object);
+            var service = new AccountService(_userManagerMock.Object, _configMock.Object);
 
             var result = await service.LoginAsync("test@test.com", "wrongpassword");
 
@@ -69,7 +69,7 @@ namespace ClinicManagement.Test.Services
             _userManagerMock.Setup(x => x.CheckPasswordAsync(user, "password")).ReturnsAsync(true);
             _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "InvalidRole" });
 
-            var service = new AccountService(_userManagerMock.Object, null, _configMock.Object);
+            var service = new AccountService(_userManagerMock.Object, _configMock.Object);
 
             var result = await service.LoginAsync("test@test.com", "password");
 
@@ -85,7 +85,7 @@ namespace ClinicManagement.Test.Services
             _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<Patient>(), "Password123")).ReturnsAsync(IdentityResult.Success);
             _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<Patient>(), "Patient")).ReturnsAsync(IdentityResult.Success);
 
-            var service = new AccountService(_userManagerMock.Object, null, _configMock.Object);
+            var service = new AccountService(_userManagerMock.Object, _configMock.Object);
 
             var result = await service.RegisterPatientAsync("John", "Doe", "0123456789", "patient@test.com", "Password123", "Password123", "123456", Gender.Male, new System.DateOnly(1990, 1, 1));
 
@@ -99,7 +99,7 @@ namespace ClinicManagement.Test.Services
             var errors = new IdentityError[] { new IdentityError { Description = "Error creating user" } };
             _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<Patient>(), "Password123")).ReturnsAsync(IdentityResult.Failed(errors));
 
-            var service = new AccountService(_userManagerMock.Object, null, _configMock.Object);
+            var service = new AccountService(_userManagerMock.Object, _configMock.Object);
 
             var result = await service.RegisterPatientAsync("John", "Doe", "0123456789", "patient@test.com", "Password123", "Password123", "123456", Gender.Male, new System.DateOnly(1990, 1, 1));
 
@@ -115,7 +115,7 @@ namespace ClinicManagement.Test.Services
             _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<Doctor>(), "Password123")).ReturnsAsync(IdentityResult.Success);
             _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<Doctor>(), "Doctor")).ReturnsAsync(IdentityResult.Success);
 
-            var service = new AccountService(_userManagerMock.Object, null, _configMock.Object);
+            var service = new AccountService(_userManagerMock.Object, _configMock.Object);
 
             var result = await service.RegisterDoctorAsync("Alice", "Smith", "0123456789", "doctor@test.com", "Password123", "Password123", 1);
 
@@ -129,7 +129,7 @@ namespace ClinicManagement.Test.Services
             var errors = new IdentityError[] { new IdentityError { Description = "Error creating doctor" } };
             _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<Doctor>(), "Password123")).ReturnsAsync(IdentityResult.Failed(errors));
 
-            var service = new AccountService(_userManagerMock.Object, null, _configMock.Object);
+            var service = new AccountService(_userManagerMock.Object, _configMock.Object);
 
             var result = await service.RegisterDoctorAsync("Alice", "Smith", "0123456789", "doctor@test.com", "Password123", "Password123", 1);
 
@@ -145,7 +145,7 @@ namespace ClinicManagement.Test.Services
             _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<Admin>(), "Password123")).ReturnsAsync(IdentityResult.Success);
             _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<Admin>(), "Admin")).ReturnsAsync(IdentityResult.Success);
 
-            var service = new AccountService(_userManagerMock.Object, null, _configMock.Object);
+            var service = new AccountService(_userManagerMock.Object, _configMock.Object);
 
             var result = await service.RegisterAdminAsync("Bob", "Johnson", "0123456789", "admin@test.com", "Password123", "Password123");
 
@@ -159,7 +159,7 @@ namespace ClinicManagement.Test.Services
             var errors = new IdentityError[] { new IdentityError { Description = "Error creating admin" } };
             _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<Admin>(), "Password123")).ReturnsAsync(IdentityResult.Failed(errors));
 
-            var service = new AccountService(_userManagerMock.Object, null, _configMock.Object);
+            var service = new AccountService(_userManagerMock.Object, _configMock.Object);
 
             var result = await service.RegisterAdminAsync("Bob", "Johnson", "0123456789", "admin@test.com", "Password123", "Password123");
 

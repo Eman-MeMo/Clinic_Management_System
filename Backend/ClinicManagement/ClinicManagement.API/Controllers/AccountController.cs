@@ -3,7 +3,6 @@ using ClinicManagement.Application.Commands.Users.RegisterAdmin;
 using ClinicManagement.Application.Commands.Users.RegisterDoctor;
 using ClinicManagement.Application.Commands.Users.RegisterPatient;
 using ClinicManagement.Application.Interfaces;
-using ClinicManagement.Domain.DTOs.AccountDTOs;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

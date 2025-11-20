@@ -20,7 +20,7 @@ namespace ClinicManagement.Infrastructure.Services
 
         public async Task EndSessionAsync(int sessionId, SessionStatus status)
         {
-            var session = await unitOfWork.SessionRepository.GetByIdAsync(sessionId);
+            var session = await unitOfWork.SessionRepository.GetWithAppointmentByIdAsync(sessionId);
             if (session == null)
                 throw new InvalidOperationException("Session not found.");
 
@@ -30,7 +30,7 @@ namespace ClinicManagement.Infrastructure.Services
                 session.Status = status;
                 session.ActualEndTime = DateTime.UtcNow;
 
-                // Update related appointment
+                // Update related appointment and attendance
                 if (session.Appointment != null)
                 {
                     session.Appointment.Status = status == SessionStatus.Confirmed
@@ -38,6 +38,21 @@ namespace ClinicManagement.Infrastructure.Services
                                                  : AppointmentStatus.Cancelled;
 
                     unitOfWork.AppointmentRepository.Update(session.Appointment);
+
+                    var attendance = await unitOfWork.AttendanceRepository.GetBySessionIdAsync(session.Id);
+                    if (attendance != null) {
+                        attendance.IsPresent = status == SessionStatus.Confirmed;
+                    }
+                    else
+                    {
+                        attendance = new Attendance
+                        {
+                            SessionId = session.Id,
+                            PatientId = session.PatientId,
+                            IsPresent = status == SessionStatus.Confirmed,
+                        };
+                        await unitOfWork.AttendanceRepository.AddAsync(attendance);
+                    }                    
                 }
 
                 unitOfWork.SessionRepository.Update(session);

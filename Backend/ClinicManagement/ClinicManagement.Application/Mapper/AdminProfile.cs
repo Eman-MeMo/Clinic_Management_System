@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using ClinicManagement.Domain.DTOs.AccountDTOs;
 using ClinicManagement.Domain.DTOs.AdminDTOs;
 using ClinicManagement.Domain.Entities;
 using System;
@@ -13,16 +12,10 @@ namespace ClinicManagement.Application.Mapper
     public class AdminProfile:Profile
     {
         public AdminProfile() {
-            CreateMap<AdminRegisterDto, Admin>()
-             .AfterMap((src, dest) => {
-                 dest.UserName = src.FirstName + src.LastName;
-             }).ReverseMap();
-
             CreateMap<AdminDto, Admin>()
                 .AfterMap((src, dest) => {
                     dest.UserName = src.FirstName + " " + src.LastName;
                 }).ReverseMap();
         }
-
     }
 }

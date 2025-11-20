@@ -18,7 +18,7 @@ namespace ClinicManagement.Application.Services
         public PaymentService(IUnitOfWork _unitOfWork) {
             unitOfWork = _unitOfWork;
         }
-        public async Task<int> CreatePayment(int billId,decimal amount,PaymentMethod method)
+        public async Task<int> CreatePayment(int billId,PaymentMethod method)
         {
             
             var bill = await unitOfWork.BillRepository.GetByIdAsync(billId);
@@ -28,14 +28,10 @@ namespace ClinicManagement.Application.Services
             if (bill.IsPaid)
                 throw new InvalidOperationException("Bill is already marked as paid.");
 
-            if(amount != bill.Amount)
-                throw new InvalidOperationException("Payment amount must match the bill amount.");
-
-
             var payment = new Payment
             {
                 BillId = billId,
-                Amount = amount,
+                Amount = bill.Amount,
                 Date = DateTime.UtcNow,
                 PaymentMethod = method
             };

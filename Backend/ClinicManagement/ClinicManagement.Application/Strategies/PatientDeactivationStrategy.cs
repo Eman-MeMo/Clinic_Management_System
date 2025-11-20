@@ -11,9 +11,9 @@ namespace ClinicManagement.Application.Strategies
     {
         private readonly IUnitOfWork unitOfWork;
 
-        public PatientDeactivationStrategy(IUnitOfWork unitOfWork)
+        public PatientDeactivationStrategy(IUnitOfWork _unitOfWork)
         {
-            unitOfWork = unitOfWork;
+            unitOfWork = _unitOfWork;
         }
         public bool CanHandle(string userType) => userType.Equals("Patient", StringComparison.OrdinalIgnoreCase);
         public async Task DeactivateAsync(string patientId)

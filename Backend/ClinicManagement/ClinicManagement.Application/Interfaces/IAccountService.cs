@@ -1,5 +1,4 @@
-﻿using ClinicManagement.Domain.DTOs.AccountDTOs;
-using ClinicManagement.Domain.Enums;
+﻿using ClinicManagement.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;

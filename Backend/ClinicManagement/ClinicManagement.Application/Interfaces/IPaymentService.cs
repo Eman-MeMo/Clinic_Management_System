@@ -9,6 +9,6 @@ namespace ClinicManagement.Application.Interfaces
 {
     public interface IPaymentService
     {
-        Task<int> CreatePayment(int billId, decimal amount, PaymentMethod method);
+        Task<int> CreatePayment(int billId, PaymentMethod method);
     }
 }

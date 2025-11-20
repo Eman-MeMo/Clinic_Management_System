@@ -47,13 +47,13 @@ namespace ClinicManagement.API.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            var attendanceDtos = mapper.Map<List<AttendanceDto>>(items);
-            var result = new PaginatedResultDto<AttendanceDto>
+            var sessioneDtos = mapper.Map<List<SessionDto>>(items);
+            var result = new PaginatedResultDto<SessionDto>
             {
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                Items = attendanceDtos
+                Items = sessioneDtos
             };
 
             return Ok(result);
@@ -75,13 +75,13 @@ namespace ClinicManagement.API.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            var attendanceDtos = mapper.Map<List<AttendanceDto>>(items);
-            var result = new PaginatedResultDto<AttendanceDto>
+            var sessioneDtos = mapper.Map<List<SessionDto>>(items);
+            var result = new PaginatedResultDto<SessionDto>
             {
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                Items = attendanceDtos
+                Items = sessioneDtos
             };
 
             return Ok(result);
@@ -134,7 +134,7 @@ namespace ClinicManagement.API.Controllers
         }
 
         [HttpPut("add-doctor-notes/{sessionId}")]
-        public async Task<IActionResult> AddDoctorNotes(int sessionId, string notes)
+        public async Task<IActionResult> UpdateDoctorNotes(int sessionId, string notes)
         {
             if (sessionId < 1 || string.IsNullOrWhiteSpace(notes))
             {
@@ -147,7 +147,7 @@ namespace ClinicManagement.API.Controllers
                 return NotFound("Session not found.");
             }
 
-            await unitOfWork.SessionRepository.AddDoctorNotes(sessionId, notes);
+            await unitOfWork.SessionRepository.UpdateDoctorNotesAsync(sessionId, notes);
             return Ok("Doctor notes added successfully.");
         }
     }

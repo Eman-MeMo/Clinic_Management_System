@@ -15,5 +15,6 @@ namespace ClinicManagement.Application.Interfaces
         Task<bool> HasAppointmentForDoctorAsync(string doctorId);
         Task<IEnumerable<Appointment>> GetAllByPatientIdAsync(string pateintId);
         Task CancelAllAppointmentsForPatient(string patientId);
+        Task<bool> CanPatientBook(string patientId, DateTime date);
     }
 }

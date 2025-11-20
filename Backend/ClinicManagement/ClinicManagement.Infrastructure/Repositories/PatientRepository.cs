@@ -12,8 +12,7 @@ namespace ClinicManagement.Infrastructure.Repositories
 {
     public class PatientRepository : UserRepository<Patient>,IPatientRepository
     {
-        protected readonly ClinicDbContext db;
-        public PatientRepository(ClinicDbContext _db):base(_db)
+        public PatientRepository(ClinicDbContext db):base(db)
         {
         }
         public async Task<Patient> GetByNationalIdAsync(string nationId)

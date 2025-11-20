@@ -9,8 +9,8 @@ namespace ClinicManagement.Application.Interfaces
 {
     public interface IAttendanceService
     {
-        Task<int> MarkPresentAsync(int sessionId, string patientId, string? notes);
-        Task<int> MarkAbsentAsync(int sessionId, string patientId, string? notes);
+        Task MarkPresentAsync(int sessionId, string patientId, string? notes);
+        Task MarkAbsentAsync(int sessionId, string patientId, string? notes);
         Task<AttendanceSummaryDto> GetDailySummaryReportAsync(DateTime date);
     }
 }

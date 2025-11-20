@@ -14,9 +14,6 @@ namespace ClinicManagement.Application.Mapper
         public PaymentProfile() {
             CreateMap<Payment, PaymentDto>()
             .ReverseMap();
-
-            CreateMap<CreatePaymentDto, Payment>()
-            .ReverseMap();
         }
     }
 }

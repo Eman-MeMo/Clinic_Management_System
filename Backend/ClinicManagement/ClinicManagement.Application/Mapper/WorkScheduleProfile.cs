@@ -15,9 +15,6 @@ namespace ClinicManagement.Application.Mapper
 
             CreateMap<WorkSchedule,WorkScheduleDto>()
                 .ReverseMap();
-
-            CreateMap<CreateWorkScheduleDto, WorkSchedule>()
-                .ReverseMap();
         }
     }
 }

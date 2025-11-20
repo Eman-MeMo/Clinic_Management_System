@@ -17,13 +17,13 @@ namespace ClinicManagement.API.Controllers
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
-        private readonly IMedicalRecordService medicalRecordService;
+        private readonly IPrescriptionService prescriptionService;
 
-        public PrescriptionController(IUnitOfWork _unitOfWork, IMapper _mapper, IMedicalRecordService _medicalRecordService)
+        public PrescriptionController(IUnitOfWork _unitOfWork, IMapper _mapper, IPrescriptionService _prescriptionService)
         {
             unitOfWork = _unitOfWork;
             mapper = _mapper;
-            medicalRecordService = _medicalRecordService;
+            prescriptionService = _prescriptionService;
         }
 
         [HttpGet]
@@ -69,15 +69,9 @@ namespace ClinicManagement.API.Controllers
             {
                 return BadRequest("Invalid Prescription ID.");
             }
+            var prescriptionDtoFinal = await prescriptionService.CreatePrescriptionAsync(prescriptionDto);
 
-            var prescription = mapper.Map<Prescription>(prescriptionDto);
-            await unitOfWork.PrescriptionRepository.AddAsync(prescription);
-            await unitOfWork.SaveChangesAsync();
-
-            await medicalRecordService.CreateMedicalRecordAsync(prescriptionDto.Notes, prescriptionDto.Diagnosis, prescription.Id);
-
-            var prescriptionDtoFinal = mapper.Map<PrescriptionDto>(prescription);
-            return CreatedAtAction(nameof(GetPrescriptionById), new { id = prescription.Id }, prescriptionDtoFinal);
+            return CreatedAtAction(nameof(GetPrescriptionById), new { id = prescriptionDtoFinal.Id }, prescriptionDtoFinal);
         }
 
         [HttpPut("{id}")]

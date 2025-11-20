@@ -46,17 +46,18 @@ namespace ClinicManagement.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateSpecialization([FromBody] CreateSpecializationDto specializationDto)
+        public async Task<IActionResult> CreateSpecialization(string name)
         {
-            if (specializationDto == null)
+            if (name == null)
             {
-                return BadRequest("Specialization data is null.");
+                return BadRequest("Specialization name is null.");
             }
-            var specialization = mapper.Map<Domain.Entities.Specialization>(specializationDto);
-            await unitOfWork.SpecializationRepository.AddAsync(specialization);
-            await unitOfWork.SaveChangesAsync();
+            await unitOfWork.SpecializationRepository.AddByNameAsync(name);
+            var id=await unitOfWork.SaveChangesAsync(); 
+            var specialization = await unitOfWork.SpecializationRepository.GetByIdAsync(id);
             var resultDto = mapper.Map<SpecializationDto>(specialization);
             return CreatedAtAction(nameof(GetSpecializationById), new { id = specialization.Id }, resultDto);
+
         }
 
         [HttpPut("{id:int}")]

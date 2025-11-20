@@ -20,6 +20,7 @@ namespace ClinicManagement.Application.Commands.Users.RegisterDoctor
             if(request== null)
                 throw new ArgumentNullException(nameof(request));
 
+
             return await _userService.RegisterDoctorAsync(request.FirstName, request.LastName, request.PhoneNumber, request.Email, request.Password, request.ConfirmPassword, request.SpecializationId);
         }
     }

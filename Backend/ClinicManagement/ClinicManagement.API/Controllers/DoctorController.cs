@@ -3,10 +3,13 @@ using ClinicManagement.Application.Commands.Users.DeactivateUser;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Application.Services;
 using ClinicManagement.Domain.DTOs.DoctorDTOs;
+using ClinicManagement.Domain.DTOs.Pagination;
+using ClinicManagement.Domain.DTOs.PatientDTOs;
 using ClinicManagement.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
@@ -17,28 +20,40 @@ namespace ClinicManagement.API.Controllers
     public class DoctorController : ControllerBase
     {
         private readonly IDoctorService doctorService;
+        private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
         private readonly IMediator mediator;
 
-        public DoctorController(IDoctorService _doctorService, IMapper _mapper,IMediator _mediator)
+        public DoctorController(IDoctorService _doctorService,IUnitOfWork _unitOfWork, IMapper _mapper,IMediator _mediator)
         {
             doctorService = _doctorService;
+            unitOfWork = _unitOfWork;
             mapper = _mapper;
             mediator = _mediator;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllDoctors()
+        public async Task<IActionResult> GetAllDoctors([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var doctors = await doctorService.GetAllAsync();
+            var doctors = doctorService.GetAllAsQueryable();
             if (doctors == null || !doctors.Any())
             {
                 return NotFound("No doctors found.");
             }
-            var doctorDtos = mapper.Map<IEnumerable<DoctorDto>>(doctors);
-            return Ok(doctorDtos);
-        }
+            var totalCount = await doctors.CountAsync();
+            var paginationSkip = (pageNumber - 1) * pageSize;
+            var items = await doctors.Skip(paginationSkip).Take(pageSize).ToListAsync();
 
+            var result = new PaginatedResultDto<DoctorDto>
+            {
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Items = mapper.Map<List<DoctorDto>>(items)
+            };
+
+            return Ok(result);
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDoctorById(string id)
         {
@@ -75,7 +90,11 @@ namespace ClinicManagement.API.Controllers
             {
                 return NotFound($"Doctor with ID {id} not found.");
             }
-
+            var specialization = await unitOfWork.SpecializationRepository.GetByIdAsync(doctorDto.SpecializationId);
+            if (specialization == null)
+            {
+                return BadRequest($"Specialization with ID {doctorDto.SpecializationId} does not exist.");
+            }
             mapper.Map(doctorDto, doctor);
             doctorService.Update(doctor);
 

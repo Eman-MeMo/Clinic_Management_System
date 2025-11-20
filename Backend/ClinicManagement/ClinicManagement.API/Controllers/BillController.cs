@@ -70,7 +70,9 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> CreateBill([FromBody] CreateBillCommand createBillCommand)
         {
             var billId= await mediator.Send(createBillCommand);
-            return CreatedAtAction(nameof(GetBillById), new { id = billId });
+            var bill = await unitOfWork.BillRepository.GetByIdAsync(billId);
+            var billDTO = mapper.Map<BillDto>(bill);
+            return CreatedAtAction(nameof(GetBillById), new { id = billId },billDTO);
         }
 
         [HttpPut("{id}")]

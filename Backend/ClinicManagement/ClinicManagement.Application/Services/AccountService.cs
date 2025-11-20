@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using ClinicManagement.Application.Interfaces;
-using ClinicManagement.Domain.DTOs.AccountDTOs;
 using ClinicManagement.Domain.Entities;
 using ClinicManagement.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
@@ -15,14 +14,12 @@ namespace ClinicManagement.Application.Services
     public class AccountService : IAccountService
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly IMapper _mapper;
         private readonly IConfiguration _config;
         private readonly string[] allowedRoles = new[] { "Admin", "Doctor", "Patient" };
 
-        public AccountService(UserManager<AppUser> userManager, IMapper mapper, IConfiguration config)
+        public AccountService(UserManager<AppUser> userManager, IConfiguration config)
         {
             _userManager = userManager;
-            _mapper = mapper;
             _config = config;
         }
 
@@ -79,7 +76,8 @@ namespace ClinicManagement.Application.Services
                 FirstName = FirstName,
                 LastName = Lastname,
                 PhoneNumber = PhoneNumber,
-                IsActive = true
+                IsActive = true,
+                SpecializationId = SpecializationId
             };
 
             var result = await _userManager.CreateAsync(doctor, Password);

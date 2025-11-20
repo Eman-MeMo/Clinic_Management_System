@@ -8,20 +8,19 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Commands.Users.LoginUser
 {
-    public class LoginUserHandler : IRequestHandler<LoginUserCommand, Unit>
+    public class LoginUserHandler : IRequestHandler<LoginUserCommand, object>
     {
         private readonly IAccountService accountService;
         public LoginUserHandler(IAccountService _accountService)
         {
             accountService = _accountService;
         }
-        public async Task<Unit> Handle(LoginUserCommand request, CancellationToken cancellationToken)
+        public async Task<object> Handle(LoginUserCommand request, CancellationToken cancellationToken)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            await accountService.LoginAsync(request.Email,request.Password);
-            return Unit.Value;
+            return await accountService.LoginAsync(request.Email,request.Password);
         }
     }
 }

@@ -15,9 +15,6 @@ namespace ClinicManagement.Application.Mapper
         {
             CreateMap<MedicalRecord, MedicalRecordDto>()
                 .ReverseMap();
-
-            CreateMap<MedicalRecord, CreateMedicalRecordDto>()
-                .ReverseMap();
         }
     }
 }

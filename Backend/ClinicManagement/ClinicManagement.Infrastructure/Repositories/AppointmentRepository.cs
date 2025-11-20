@@ -53,5 +53,17 @@ namespace ClinicManagement.Infrastructure.Repositories
             }
             db.Appointments.UpdateRange(appointments);
         }
+        public async Task<bool> CanPatientBook(string patientId, DateTime date)
+        {
+            // Check if patient already has an appointment at the same date/time
+            var overlapping = await db.Appointments
+                .Where(a => a.PatientId == patientId
+                            && a.Date == date
+                            && a.Status != AppointmentStatus.Cancelled)
+                .AnyAsync();
+
+            return !overlapping;
+        }
+
     }
 }

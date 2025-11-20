@@ -20,7 +20,7 @@ namespace ClinicManagement.Application.Commands.Payments.CreatePayment
             if(request == null)
                 throw new ArgumentNullException(nameof(request), "Request cannot be null.");
 
-            var paymentId = await paymentService.CreatePayment(request.BillId, request.Amount, request.PaymentMethod);
+            var paymentId = await paymentService.CreatePayment(request.BillId, request.PaymentMethod);
             return paymentId;
         }
     }

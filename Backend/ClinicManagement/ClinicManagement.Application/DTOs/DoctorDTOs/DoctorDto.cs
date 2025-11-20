@@ -26,8 +26,8 @@ namespace ClinicManagement.Domain.DTOs.DoctorDTOs
 
         public bool IsActive { get; set; } = true;
 
-        [Required(ErrorMessage = "Specialization is required.")]
-        public string Specialization { get; set; }
+        [Required(ErrorMessage = "Specialization ID is required.")]
+        public int SpecializationId { get; set; }
 
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email address.")]

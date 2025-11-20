@@ -10,14 +10,6 @@ namespace ClinicManagement.Application.Commands.Bills.CreateBill
     public class CreateBillValidator:AbstractValidator<CreateBillCommand>
     {
         public CreateBillValidator() {
-            RuleFor(b => b.Amount)
-            .GreaterThan(0)
-            .WithMessage("Amount must be greater than zero.");
-
-            RuleFor(b => b.Date)
-                .NotEmpty().WithMessage("Date is required.")
-                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Date cannot be in the future.");
-
             RuleFor(b => b.SessionId)
                 .GreaterThan(0).WithMessage("Session ID must be a positive number.");
 

@@ -2,6 +2,7 @@
 using ClinicManagement.Application.Interfaces;
 using MediatR;
 using Moq;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,17 +37,19 @@ namespace ClinicManagement.Test.Commands.Users
         }
 
         [Fact]
-        public async Task Handle_Should_Return_UnitValue_When_Successful()
+        public async Task Handle_Should_Return_Object_When_Successful()
         {
             var command = new LoginUserCommand
             {
                 Email = "user@test.com",
                 Password = "abc123"
             };
+             accountServiceMock.Setup(a => a.LoginAsync(It.IsAny<string>(), It.IsAny<string>()))
+                              .ReturnsAsync(new { success = true, message = "Login successful", Token="TokenString" });
 
             var result = await handler.Handle(command, CancellationToken.None);
 
-            Assert.Equal(Unit.Value, result);
+            Assert.NotNull(result);
         }
 
         [Fact]

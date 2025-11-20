@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClinicManagement.Domain.DTOs.PrescriptionDTOs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace ClinicManagement.Application.Interfaces
 {
     public interface IPrescriptionService
     {
-        Task CreateMedicalRecoredAsync(string? Notes, string Diagnosis, int prescriptionId);
+        Task<PrescriptionDto> CreatePrescriptionAsync(CreatePrescriptionDto dto);
     }
 }

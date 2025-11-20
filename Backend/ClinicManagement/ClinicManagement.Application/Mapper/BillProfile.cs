@@ -14,9 +14,6 @@ namespace ClinicManagement.Application.Mapper
         public BillProfile() {
             CreateMap<Bill, BillDto>()
              .ReverseMap();
-
-            CreateMap<Bill, CraeteBillDto>()
-                .ReverseMap();
         }
     }
 }

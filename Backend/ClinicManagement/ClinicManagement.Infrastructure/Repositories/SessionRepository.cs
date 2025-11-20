@@ -19,7 +19,7 @@ namespace ClinicManagement.Infrastructure.Repositories
 
         }
 
-        public async Task AddDoctorNotes(int sessionId, string notes)
+        public async Task UpdateDoctorNotesAsync(int sessionId, string notes)
         {
             var session = await db.Set<Session>().FirstOrDefaultAsync(s => s.Id == sessionId);
             if (session != null)
@@ -58,6 +58,20 @@ namespace ClinicManagement.Infrastructure.Repositories
             await db.SaveChangesAsync();
             return session.Id;
         }
+        public async Task<Session> GetByIdWithAttendanceAsync(int sessionId)
+        {
+            return await db.Sessions
+                           .Include(s => s.Attendance)
+                           .FirstOrDefaultAsync(s => s.Id == sessionId);
+        }
+        public async Task<Session> GetWithAppointmentByIdAsync(int sessionId)
+        {
+            return await db.Sessions
+                           .Include(s => s.Appointment)
+                           .Include(s=> s.Attendance)
+                           .FirstOrDefaultAsync(s => s.Id == sessionId);
+        }
+
         public async Task<bool> HasSessionForAppointmentAsync(int appointmentId)
         {
             return await db.Sessions.AnyAsync(s => s.AppointmentId == appointmentId);

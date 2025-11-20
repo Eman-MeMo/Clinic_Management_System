@@ -8,19 +8,20 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Commands.Attendances.MarkPresent
 {
-    public class MarkPresentHandler:IRequestHandler<MarkPresentCommand, int>
+    public class MarkPresentHandler:IRequestHandler<MarkPresentCommand, Unit>
     {
         private readonly IAttendanceService attendanceService;
         public MarkPresentHandler(IAttendanceService _attendanceService)
         {
             attendanceService = _attendanceService;
         }
-        public async Task<int> Handle(MarkPresentCommand request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(MarkPresentCommand request, CancellationToken cancellationToken)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            return await attendanceService.MarkPresentAsync(request.SessionId, request.PatientId, request.Notes);
+            await attendanceService.MarkPresentAsync(request.SessionId, request.PatientId, request.Notes);
+            return Unit.Value;
         }
     }
 }

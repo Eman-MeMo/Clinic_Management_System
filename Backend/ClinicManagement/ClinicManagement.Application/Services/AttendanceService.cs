@@ -18,52 +18,30 @@ namespace ClinicManagement.Infrastructure.Services
         {
             unitOfWork = _unitOfWork;
         }
-        public async Task<int> MarkPresentAsync(int sessionId, string patientId, string? notes)
+        public async Task MarkPresentAsync(int sessionId, string patientId, string? notes)
         {
             var session = await unitOfWork.SessionRepository.GetByIdAsync(sessionId);
             if (session == null || session.Status != SessionStatus.Confirmed)
                 throw new InvalidOperationException("Session not valid for attendance.");
 
-            var existing = await unitOfWork.AttendanceRepository
-                .GetByPatientIdAndDateAsync(patientId, session.Appointment.Date);
-            if (existing != null)
-                throw new InvalidOperationException("Attendance already recorded.");
-
-            var attendance = new Attendance
-            {
-                SessionId = sessionId,
-                PatientId = patientId,
-                IsPresent = true,
-                Notes = notes
-            };
-
-            await unitOfWork.AttendanceRepository.AddAsync(attendance);
+            var attendance = await unitOfWork.AttendanceRepository.GetBySessionIdAsync(sessionId);
+            attendance.IsPresent = true;
+            
+            unitOfWork.AttendanceRepository.Update(attendance);
             await unitOfWork.SaveChangesAsync();
-            return attendance.Id;
         }
 
-        public async Task<int> MarkAbsentAsync(int sessionId, string patientId, string? notes)
+        public async Task MarkAbsentAsync(int sessionId, string patientId, string? notes)
         {
             var session = await unitOfWork.SessionRepository.GetByIdAsync(sessionId);
             if (session == null || session.Status != SessionStatus.Confirmed)
                 throw new InvalidOperationException("Session not valid for attendance.");
 
-            var existing = await unitOfWork.AttendanceRepository
-                .GetByPatientIdAndDateAsync(patientId, session.Appointment.Date);
-            if (existing != null)
-                throw new InvalidOperationException("Attendance already recorded for this patient on this date.");
+            var attendance = await unitOfWork.AttendanceRepository.GetBySessionIdAsync(sessionId);
+            attendance.IsPresent = false;
 
-            var attendance = new Attendance
-            {
-                SessionId = sessionId,
-                PatientId = patientId,
-                IsPresent = false,
-                Notes = notes
-            };
-
-            await unitOfWork.AttendanceRepository.AddAsync(attendance);
+            unitOfWork.AttendanceRepository.Update(attendance);
             await unitOfWork.SaveChangesAsync();
-            return attendance.Id;
         }
 
         public async Task<AttendanceSummaryDto> GetDailySummaryReportAsync(DateTime date)

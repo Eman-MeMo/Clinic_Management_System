@@ -102,7 +102,7 @@ namespace ClinicManagement.API
                 builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
                 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
                 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-                builder.Services.AddScoped<IUserRepository<AppUser>, UserRepository<AppUser>>();
+                builder.Services.AddScoped(typeof(IUserRepository<>), typeof(UserRepository<>));
                 builder.Services.AddScoped<IAttendanceRepository,AttendanceRepository>();
                 builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
                 builder.Services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
@@ -111,6 +111,7 @@ namespace ClinicManagement.API
                 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
                 builder.Services.AddScoped<ISessionServiceRepository, SessionServiceRepository>();
                 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+                builder.Services.AddScoped(typeof(IUserService<>), typeof(UserService<>));
                 builder.Services.AddScoped<IDoctorAvailabilityService, DoctorAvailabilityService>();
                 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
                 builder.Services.AddScoped<IAccountService, AccountService>();
@@ -118,13 +119,16 @@ namespace ClinicManagement.API
                 builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
                 builder.Services.AddScoped<IPaymentService, PaymentService>();
                 builder.Services.AddScoped<IBillingService, BillingService>();
+                builder.Services.AddScoped<IDoctorService, DoctorService>();
+                builder.Services.AddScoped<IPatientService, PatientService>();
+                builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
                 builder.Services.AddScoped<DoctorAvailabilityService>();
                 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
                 // For Stragegy Pattern
                 builder.Services.AddScoped<IUserDeactivationStrategy, DoctorDeactivationStrategy>();
                 builder.Services.AddScoped<IUserDeactivationStrategy, PatientDeactivationStrategy>();
-
+                builder.Services.AddScoped<IUserDeactivationStrategy, AdminDeactivationStrategy>();
 
             // Unit of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -148,6 +152,7 @@ namespace ClinicManagement.API
             app.UseCors("AllowSpecificOrigin");
 
             app.UseAuthentication(); 
+
             app.UseAuthorization();
 
             app.MapControllers();

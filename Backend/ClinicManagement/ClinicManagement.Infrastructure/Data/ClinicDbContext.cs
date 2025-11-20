@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,13 @@ namespace ClinicManagement.Infrastructure.Data
         public ClinicDbContext(DbContextOptions<ClinicDbContext> options, ILogger<ClinicDbContext> _logger) : base(options)
         {
             logger = _logger;
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+
+            optionsBuilder.ConfigureWarnings(warnings =>
+            warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
         }
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
@@ -81,6 +89,7 @@ namespace ClinicManagement.Infrastructure.Data
                 .Property(s => s.Price)
                 .HasColumnType("decimal(18,2)");
 
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ClinicDbContext).Assembly);
 
         }
         public DbSet<Admin> Admins { get; set; }

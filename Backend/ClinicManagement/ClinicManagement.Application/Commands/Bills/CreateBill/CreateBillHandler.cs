@@ -28,7 +28,7 @@ namespace ClinicManagement.Application.Commands.Bills.CreateBill
                 throw new ArgumentNullException(nameof(request));
             }
 
-            return await billingService.CreateBillAsync(request.PatientId, request.SessionId, request.Amount);
+            return await billingService.CreateBillAsync(request.PatientId, request.SessionId);
         }
     }
 }

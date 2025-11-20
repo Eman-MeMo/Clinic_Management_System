@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.DTOs.ServiceDTOs;
+using ClinicManagement.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -29,7 +30,7 @@ namespace ClinicManagement.API.Controllers
             {
                 return NotFound("No services found.");
             }
-            var serviceDtos = mapper.Map<IEnumerable<ServiceDto>>(services);
+            var serviceDtos = mapper.Map<List<ServiceDto>>(services);
             return Ok(serviceDtos);
         }
 
@@ -53,7 +54,7 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Service data is null.");
             }
 
-            var service = mapper.Map<Domain.Entities.Service>(serviceDto);
+            var service = mapper.Map<Service>(serviceDto);
             await unitOfWork.ServiceRepository.AddAsync(service);
             await unitOfWork.SaveChangesAsync();
 

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Commands.Attendances.MarkAbsent
 {
-    public class MarkAbsentCommand:IRequest<int>
+    public class MarkAbsentCommand:IRequest<Unit>
     {
         public int SessionId { get; set; }
         public string PatientId { get; set; }

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ClinicManagement.Domain.Enums;
+using ClinicManagement.Domain.Entities;
 
 namespace ClinicManagement.Application.Commands.Appointments.BookAppointment
 {
@@ -32,7 +33,11 @@ namespace ClinicManagement.Application.Commands.Appointments.BookAppointment
             if (!isDoctorAvailable)
                 throw new InvalidOperationException("The doctor is not available at the requested time.");
 
-            var appointment = mapper.Map<Domain.Entities.Appointment>(request);
+            var patientHasConflict = await unitOfWork.AppointmentRepository.CanPatientBook(request.PatientId, request.Date);
+            if (!patientHasConflict)
+                throw new InvalidOperationException("The patient has a conflicting appointment at the requested time.");
+
+            var appointment = mapper.Map<Appointment>(request);
             appointment.Status = AppointmentStatus.Scheduled;
             await unitOfWork.AppointmentRepository.AddAsync(appointment);
             await unitOfWork.SaveChangesAsync();

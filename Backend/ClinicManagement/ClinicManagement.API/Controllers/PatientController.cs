@@ -33,6 +33,10 @@ namespace ClinicManagement.API.Controllers
         public async Task<IActionResult> GetAllPatients([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             var patients =  patientService.GetAllAsQueryable();
+            if (patients == null || !patients.Any())
+            {
+                return NotFound("No patients found.");
+            }
             var totalCount = await patients.CountAsync();
             var paginationSkip = (pageNumber - 1) * pageSize;
             var items = await patients.Skip(paginationSkip).Take(pageSize).ToListAsync();

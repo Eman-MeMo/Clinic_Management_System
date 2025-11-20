@@ -72,7 +72,9 @@ namespace ClinicManagement.API.Controllers
                 return BadRequest("Invalid payment data.");
             }
             var paymnentId= await mediator.Send(command);
-            return CreatedAtAction(nameof(GetPaymentById), new { id = paymnentId});
+            var payment = await unitOfWork.PaymentRepository.GetByIdAsync(paymnentId);
+            var paymentDto = mapper.Map<PaymentDto>(payment);
+            return CreatedAtAction(nameof(GetPaymentById), new { id = paymnentId},paymentDto);
         }
 
         [HttpPut("{id}")]

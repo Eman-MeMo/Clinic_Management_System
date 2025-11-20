@@ -54,10 +54,8 @@ namespace ClinicManagement.Test.Commands.Attendances
                 .Setup(s => s.MarkAbsentAsync(command.SessionId, command.PatientId, command.Notes))
                 .ReturnsAsync(1);
 
-            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // Assert
             Assert.Equal(1, result);
             _attendanceServiceMock.Verify(s => s.MarkAbsentAsync(command.SessionId, command.PatientId, command.Notes), Times.Once);
         }

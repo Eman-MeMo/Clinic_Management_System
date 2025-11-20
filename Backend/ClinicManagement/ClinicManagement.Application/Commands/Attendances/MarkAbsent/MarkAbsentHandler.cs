@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace ClinicManagement.Application.Commands.Attendances.MarkAbsent
 {
-    public class MarkAbsentHandler:IRequestHandler<MarkAbsentCommand, int>
+    public class MarkAbsentHandler:IRequestHandler<MarkAbsentCommand, Unit>
     {
         private readonly IAttendanceService _attendanceService;
         public MarkAbsentHandler(IAttendanceService attendanceService)
         {
             _attendanceService = attendanceService;
         }
-        public async Task<int> Handle(MarkAbsentCommand request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(MarkAbsentCommand request, CancellationToken cancellationToken)
         {
             if(request== null)
             {
@@ -25,7 +25,8 @@ namespace ClinicManagement.Application.Commands.Attendances.MarkAbsent
             {
                 throw new ArgumentException("Session ID cannot be less than 1.");
             }
-            return await _attendanceService.MarkAbsentAsync(request.SessionId, request.PatientId, request.Notes);
+            await _attendanceService.MarkAbsentAsync(request.SessionId, request.PatientId, request.Notes);
+            return Unit.Value;
         }
     }
 }

@@ -30,7 +30,7 @@ namespace ClinicManagement.Test.Commands.WorkSchedules
         {
             var command = new CreateWorkScheduleCommand
             {
-                DoctorId = "doc123",
+                DoctorId = "D1",
                 DayOfWeek = DayOfWeek.Monday,
                 StartTime = DateTime.Now.AddHours(1),
                 EndTime = DateTime.Now.AddHours(5),
@@ -64,7 +64,7 @@ namespace ClinicManagement.Test.Commands.WorkSchedules
         {
             var command = new CreateWorkScheduleCommand
             {
-                DoctorId = "doc456",
+                DoctorId = "D1",
                 DayOfWeek = DayOfWeek.Tuesday,
                 StartTime = DateTime.Now.AddHours(5),
                 EndTime = DateTime.Now.AddHours(1),

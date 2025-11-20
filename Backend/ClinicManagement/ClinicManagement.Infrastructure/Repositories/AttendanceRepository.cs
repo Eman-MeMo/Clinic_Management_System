@@ -19,19 +19,15 @@ namespace ClinicManagement.Infrastructure.Repositories
 
         public async Task<IEnumerable<Patient>> GetAbsentPatientsByDateAsync(DateTime date)
         {
-            var attendedPatientIds = await db.Attendances.AsNoTracking()
-                .Include(a => a.Session)
-                .ThenInclude(s => s.Appointment)
-                .Where(a => a.Session.Appointment.Date.Date == date.Date)
+            var absentPatientIds = await db.Attendances
+                .Where(a => a.Session.Appointment.Date.Date == date.Date && !a.IsPresent)
                 .Select(a => a.PatientId)
                 .Distinct()
                 .ToListAsync();
 
-            var absentPatients = await db.Patients
-                .Where(p => !attendedPatientIds.Contains(p.Id))
+            return await db.Patients
+                .Where(p => absentPatientIds.Contains(p.Id))
                 .ToListAsync();
-
-            return absentPatients;
         }
         public async Task<IEnumerable<Attendance>> GetByDateAsync(DateTime date)
         {

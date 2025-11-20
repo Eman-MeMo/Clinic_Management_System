@@ -18,10 +18,10 @@ namespace ClinicManagement.Application.Interfaces
         IMedicalRecordRepository MedicalRecordRepository { get; }
         IPaymentRepository PaymentRepository { get; }
         IPrescriptionRepository PrescriptionRepository { get; }
-        IGenericRepository<Service> ServiceRepository { get; }
+        IServiceRepository ServiceRepository { get; }
         ISessionRepository SessionRepository { get; }
         ISessionServiceRepository SessionServiceRepository { get; }
-        IGenericRepository<Specialization> SpecializationRepository { get; }
+        ISpecializationRepository SpecializationRepository { get; }
         IWorkScheduleRepository WorkScheduleRepository { get; }
         Task<int> SaveChangesAsync();
     }

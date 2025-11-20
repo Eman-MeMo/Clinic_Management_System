@@ -23,9 +23,10 @@ namespace ClinicManagement.Infrastructure.Services
             var schedules = await unitOfWork.WorkScheduleRepository.GetScheduleByDoctorAndDayAsync(doctorId, date.DayOfWeek);
 
             var workSchedule = schedules.FirstOrDefault(ws =>
-                ws.IsAvailable &&
-                TimeOnly.FromDateTime(date) >= TimeOnly.FromDateTime(ws.StartTime) &&
-                TimeOnly.FromDateTime(date) <= TimeOnly.FromDateTime(ws.EndTime));
+            ws.IsAvailable &&
+            date >= ws.StartTime &&
+            date <= ws.EndTime);
+
 
             if (workSchedule == null)
                 return false; // Doctor is not available on this day or time

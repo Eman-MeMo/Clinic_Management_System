@@ -10,9 +10,6 @@ namespace ClinicManagement.Application.Commands.Bills.CreateBill
 {
     public class CreateBillCommand:IRequest<int>
     {
-        public decimal Amount { get; set; }
-        public DateTime Date { get; set; }
-        public bool IsPaid { get; set; }
         public int SessionId { get; set; }
         public string PatientId { get; set; }
     }

@@ -46,9 +46,9 @@ namespace ClinicManagement.Test.Commands.Users
         [Fact]
         public async Task Handle_Should_Return_UnitValue_When_Successful()
         {
-            var command = new DeactivateUserCommand { UserId = "nurse007", UserType = "Nurse" };
-            strategyMock.Setup(s => s.CanHandle("Nurse")).Returns(true);
-            strategyMock.Setup(s => s.DeactivateAsync("nurse007")).Returns(Task.CompletedTask);
+            var command = new DeactivateUserCommand { UserId = "pateint123", UserType = "Patient" };
+            strategyMock.Setup(s => s.CanHandle("Patient")).Returns(true);
+            strategyMock.Setup(s => s.DeactivateAsync("pateint123")).Returns(Task.CompletedTask);
 
             var result = await handler.Handle(command, CancellationToken.None);
 

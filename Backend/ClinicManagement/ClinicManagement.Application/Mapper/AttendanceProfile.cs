@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using ClinicManagement.Domain.DTOs.AccountDTOs;
 using ClinicManagement.Domain.DTOs.AdminDTOs;
 using ClinicManagement.Domain.DTOs.AttendanceDTOs;
 using ClinicManagement.Domain.Entities;
@@ -17,7 +16,7 @@ namespace ClinicManagement.Application.Mapper
             CreateMap<AttendanceDto, Attendance>()
              .ReverseMap();
 
-            CreateMap<CreateAttendaceDto, Admin>()
+            CreateMap<CreateAttendaceDto, Attendance>()
                 .ReverseMap();
 
             CreateMap<AttendanceSummaryDto, Admin>()
