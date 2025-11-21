@@ -1,7 +1,6 @@
 ﻿using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.Entities;
 using ClinicManagement.Domain.Enums;
-using ClinicManagement.Infrastructure.Repositories;
 using ClinicManagement.Infrastructure.Services;
 using Moq;
 using System;
@@ -15,6 +14,7 @@ namespace ClinicManagement.Test.Services
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<ISessionRepository> _sessionRepoMock;
         private readonly Mock<IAppointmentRepository> _appointmentRepoMock;
+        private readonly Mock<IAttendanceRepository> _attendanceRepoMock;
         private readonly ISessionManagementService _service;
 
         public SessionManagementServiceTest()
@@ -22,17 +22,20 @@ namespace ClinicManagement.Test.Services
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _sessionRepoMock = new Mock<ISessionRepository>();
             _appointmentRepoMock = new Mock<IAppointmentRepository>();
+            _attendanceRepoMock = new Mock<IAttendanceRepository>();
 
             _unitOfWorkMock.Setup(u => u.SessionRepository).Returns(_sessionRepoMock.Object);
             _unitOfWorkMock.Setup(u => u.AppointmentRepository).Returns(_appointmentRepoMock.Object);
+            _unitOfWorkMock.Setup(u => u.AttendanceRepository).Returns(_attendanceRepoMock.Object);
 
             _service = new SessionManagementService(_unitOfWorkMock.Object);
         }
+
         #region EndSessionAsync Tests
         [Fact]
         public async Task EndSessionAsync_SessionNotFound_ThrowsException()
         {
-            _sessionRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Session)null);
+            _sessionRepoMock.Setup(r => r.GetWithAppointmentByIdAsync(1)).ReturnsAsync((Session)null);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 _service.EndSessionAsync(1, SessionStatus.Confirmed));
@@ -42,7 +45,7 @@ namespace ClinicManagement.Test.Services
         public async Task EndSessionAsync_InvalidStatus_ThrowsException()
         {
             var session = new Session { Id = 1, Status = SessionStatus.Confirmed };
-            _sessionRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(session);
+            _sessionRepoMock.Setup(r => r.GetWithAppointmentByIdAsync(1)).ReturnsAsync(session);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 _service.EndSessionAsync(1, SessionStatus.Cancelled));
@@ -52,9 +55,10 @@ namespace ClinicManagement.Test.Services
         public async Task EndSessionAsync_ValidScheduledSession_UpdatesStatusAndAppointment()
         {
             var appointment = new Appointment { Id = 1, Status = AppointmentStatus.Confirmed };
-            var session = new Session { Id = 1, Status = SessionStatus.Scheduled, Appointment = appointment };
+            var session = new Session { Id = 1, Status = SessionStatus.Scheduled, Appointment = appointment, PatientId = "P1" };
 
-            _sessionRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(session);
+            _sessionRepoMock.Setup(r => r.GetWithAppointmentByIdAsync(1)).ReturnsAsync(session);
+            _attendanceRepoMock.Setup(r => r.GetBySessionIdAsync(1)).ReturnsAsync((Attendance)null);
             _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
 
             await _service.EndSessionAsync(1, SessionStatus.Confirmed);
@@ -65,6 +69,7 @@ namespace ClinicManagement.Test.Services
 
             _sessionRepoMock.Verify(r => r.Update(session), Times.Once);
             _appointmentRepoMock.Verify(r => r.Update(session.Appointment), Times.Once);
+            _attendanceRepoMock.Verify(r => r.AddAsync(It.IsAny<Attendance>()), Times.Once);
             _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
         }
         #endregion

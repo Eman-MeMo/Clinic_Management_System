@@ -27,19 +27,18 @@ namespace ClinicManagement.Test.Commands.Payments
             var command = new CreatePaymentCommand
             {
                 BillId = 1,
-                Amount = 150.50m,
                 PaymentMethod = PaymentMethod.CreditCard
             };
 
             _paymentServiceMock
-                .Setup(p => p.CreatePayment(command.BillId, command.Amount, command.PaymentMethod))
+                .Setup(p => p.CreatePayment(command.BillId, command.PaymentMethod))
                 .ReturnsAsync(101);
 
             var result = await _handler.Handle(command, CancellationToken.None);
 
             Assert.Equal(101, result);
             _paymentServiceMock.Verify(p =>
-                p.CreatePayment(command.BillId, command.Amount, command.PaymentMethod), Times.Once);
+                p.CreatePayment(command.BillId, command.PaymentMethod), Times.Once);
         }
 
         [Fact]

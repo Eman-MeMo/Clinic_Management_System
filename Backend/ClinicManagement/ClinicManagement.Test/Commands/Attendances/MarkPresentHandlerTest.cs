@@ -1,11 +1,11 @@
 ﻿using ClinicManagement.Application.Commands.Attendances.MarkPresent;
 using ClinicManagement.Application.Interfaces;
+using MediatR;
 using Moq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace ClinicManagement.Test.Commands.Attendances
 {
@@ -21,7 +21,7 @@ namespace ClinicManagement.Test.Commands.Attendances
         }
 
         [Fact]
-        public async Task Handle_ValidRequest_ReturnsAttendanceId()
+        public async Task Handle_ValidRequest_ReturnsUnit()
         {
             var command = new MarkPresentCommand
             {
@@ -32,11 +32,11 @@ namespace ClinicManagement.Test.Commands.Attendances
 
             _attendanceServiceMock
                 .Setup(a => a.MarkPresentAsync(command.SessionId, command.PatientId, command.Notes))
-                .ReturnsAsync(10);
+                .Returns(Task.CompletedTask); // Correct for Task-returning method
 
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            Assert.Equal(10, result);
+            Assert.Equal(Unit.Value, result);
             _attendanceServiceMock.Verify(a => a.MarkPresentAsync(command.SessionId, command.PatientId, command.Notes), Times.Once);
         }
 
@@ -59,7 +59,7 @@ namespace ClinicManagement.Test.Commands.Attendances
 
             _attendanceServiceMock
                 .Setup(a => a.MarkPresentAsync(command.SessionId, command.PatientId, command.Notes))
-                .ReturnsAsync(15);
+                .Returns(Task.CompletedTask);
 
             await _handler.Handle(command, CancellationToken.None);
 

@@ -2,12 +2,12 @@
 using ClinicManagement.Application.Commands.Appointments.BookAppointment;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.Entities;
+using ClinicManagement.Domain.Enums;
 using Moq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace ClinicManagement.Test.Commands.Appointments
 {
@@ -44,7 +44,12 @@ namespace ClinicManagement.Test.Commands.Appointments
 
             var appointment = new Appointment { Id = 123, DoctorId = "D1", PatientId = "P1" };
 
-            _availabilityServiceMock.Setup(s => s.IsDoctorAvailableAsync(command.DoctorId, command.Date,null))
+            _availabilityServiceMock
+                .Setup(s => s.IsDoctorAvailableAsync(command.DoctorId, command.Date, null))
+                .ReturnsAsync(true);
+
+            _appointmentRepoMock
+                .Setup(r => r.CanPatientBook(command.PatientId, command.Date))
                 .ReturnsAsync(true);
 
             _mapperMock.Setup(m => m.Map<Appointment>(It.IsAny<BookAppointmentCommand>()))
@@ -71,7 +76,30 @@ namespace ClinicManagement.Test.Commands.Appointments
                 Date = DateTime.UtcNow.AddDays(1)
             };
 
-            _availabilityServiceMock.Setup(s => s.IsDoctorAvailableAsync(command.DoctorId, command.Date,null))
+            _availabilityServiceMock
+                .Setup(s => s.IsDoctorAvailableAsync(command.DoctorId, command.Date,null))
+                .ReturnsAsync(false);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _handler.Handle(command, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task Handle_PatientHasConflict_ThrowsInvalidOperationException()
+        {
+            var command = new BookAppointmentCommand
+            {
+                DoctorId = "D1",
+                PatientId = "P1",
+                Date = DateTime.UtcNow.AddDays(1)
+            };
+
+            _availabilityServiceMock
+                .Setup(s => s.IsDoctorAvailableAsync(command.DoctorId, command.Date,null))
+                .ReturnsAsync(true);
+
+            _appointmentRepoMock
+                .Setup(r => r.CanPatientBook(command.PatientId, command.Date))
                 .ReturnsAsync(false);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() =>

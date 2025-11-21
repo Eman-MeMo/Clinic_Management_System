@@ -5,8 +5,9 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace ClinicManagement.Test.Commands.WorkSchedules
 {
@@ -36,6 +37,10 @@ namespace ClinicManagement.Test.Commands.WorkSchedules
                 EndTime = DateTime.Now.AddHours(5),
                 IsAvailable = true
             };
+
+            _workScheduleRepoMock
+                .Setup(r => r.GetScheduleByDoctorAndDayAsync(command.DoctorId, command.DayOfWeek))
+                .ReturnsAsync(new List<WorkSchedule>());
 
             var workSchedule = new WorkSchedule { Id = 42 };
             _workScheduleRepoMock
@@ -72,6 +77,34 @@ namespace ClinicManagement.Test.Commands.WorkSchedules
             };
 
             await Assert.ThrowsAsync<ArgumentException>(() =>
+                _handler.Handle(command, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task Handle_OverlappingSchedule_ThrowsException()
+        {
+            var command = new CreateWorkScheduleCommand
+            {
+                DoctorId = "D1",
+                DayOfWeek = DayOfWeek.Wednesday,
+                StartTime = DateTime.Now.AddHours(2),
+                EndTime = DateTime.Now.AddHours(4),
+                IsAvailable = true
+            };
+
+            var existingSchedule = new WorkSchedule
+            {
+                DoctorId = "D1",
+                DayOfWeek = DayOfWeek.Wednesday,
+                StartTime = DateTime.Now.AddHours(3),
+                EndTime = DateTime.Now.AddHours(5)
+            };
+
+            _workScheduleRepoMock
+                .Setup(r => r.GetScheduleByDoctorAndDayAsync(command.DoctorId, command.DayOfWeek))
+                .ReturnsAsync(new List<WorkSchedule> { existingSchedule });
+
+            await Assert.ThrowsAsync<Exception>(() =>
                 _handler.Handle(command, CancellationToken.None));
         }
     }

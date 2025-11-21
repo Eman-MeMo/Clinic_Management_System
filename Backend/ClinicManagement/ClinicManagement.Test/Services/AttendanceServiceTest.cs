@@ -1,22 +1,16 @@
-﻿using Xunit;
-using Moq;
+﻿using Moq;
 using ClinicManagement.Infrastructure.Services;
 using ClinicManagement.Application.Interfaces;
 using ClinicManagement.Domain.Entities;
 using ClinicManagement.Domain.Enums;
 using ClinicManagement.Domain.DTOs.AttendanceDTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ClinicManagement.Infrastructure.Data;
 using ClinicManagement.Infrastructure.Repositories;
+using ClinicManagement.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ClinicManagement.Test.Services
 {
-
-
     public class AttendanceServiceTest
     {
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
@@ -38,23 +32,20 @@ namespace ClinicManagement.Test.Services
         }
 
         #region MarkPresentAsync Tests
+
         [Fact]
-        public async Task MarkPresentAsync_ValidSession_AddsAttendance()
+        public async Task MarkPresentAsync_ValidSession_UpdatesExistingAttendance()
         {
-            var session = new Session
-            {
-                Id = 1,
-                Status = SessionStatus.Confirmed,
-                Appointment = new Appointment { Date = DateTime.Today }
-            };
+            var session = new Session { Id = 1, Status = SessionStatus.Confirmed };
+            var attendance = new Attendance { Id = 10, SessionId = 1, IsPresent = false, PatientId = "P1" };
+
             _sessionRepoMock.Setup(s => s.GetByIdAsync(1)).ReturnsAsync(session);
-            _attendanceRepoMock.Setup(a => a.GetByPatientIdAndDateAsync("P1", DateTime.Today)).ReturnsAsync((Attendance)null);
-            _attendanceRepoMock.Setup(a => a.AddAsync(It.IsAny<Attendance>())).Returns(Task.CompletedTask);
+            _attendanceRepoMock.Setup(a => a.GetBySessionIdAsync(1)).ReturnsAsync(attendance);
+            _attendanceRepoMock.Setup(a => a.Update(It.IsAny<Attendance>())).Verifiable();
 
-            var result = await _service.MarkPresentAsync(1, "P1", "Notes");
+            await _service.MarkPresentAsync(1, "P1", "Note");
 
-            Assert.True(result >= 0);
-            _attendanceRepoMock.Verify(a => a.AddAsync(It.IsAny<Attendance>()), Times.Once);
+            _attendanceRepoMock.Verify(a => a.Update(It.Is<Attendance>(att => att.IsPresent)), Times.Once);
             _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
         }
 
@@ -62,45 +53,35 @@ namespace ClinicManagement.Test.Services
         public async Task MarkPresentAsync_InvalidSession_ThrowsException()
         {
             _sessionRepoMock.Setup(s => s.GetByIdAsync(1)).ReturnsAsync((Session)null);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.MarkPresentAsync(1, "P1", "Notes"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.MarkPresentAsync(1, "P1", "Note"));
         }
 
         [Fact]
-        public async Task MarkPresentAsync_AlreadyExists_ThrowsException()
+        public async Task MarkPresentAsync_MissingAttendance_ThrowsException()
         {
-            var session = new Session
-            {
-                Id = 1,
-                Status = SessionStatus.Confirmed,
-                Appointment = new Appointment { Date = DateTime.Today }
-            };
+            var session = new Session { Id = 1, Status = SessionStatus.Confirmed };
             _sessionRepoMock.Setup(s => s.GetByIdAsync(1)).ReturnsAsync(session);
-            _attendanceRepoMock.Setup(a => a.GetByPatientIdAndDateAsync("P1", DateTime.Today))
-                .ReturnsAsync(new Attendance { Id = 10 });
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.MarkPresentAsync(1, "P1", "Notes"));
+            _attendanceRepoMock.Setup(a => a.GetBySessionIdAsync(1)).ReturnsAsync((Attendance)null);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.MarkPresentAsync(1, "P1", "Note"));
         }
+
         #endregion
 
         #region MarkAbsentAsync Tests
+
         [Fact]
-        public async Task MarkAbsentAsync_ValidSession_AddsAttendance()
+        public async Task MarkAbsentAsync_ValidSession_UpdatesExistingAttendance()
         {
-            var session = new Session
-            {
-                Id = 1,
-                Status = SessionStatus.Confirmed,
-                Appointment = new Appointment { Date = DateTime.Today }
-            };
+            var session = new Session { Id = 1, Status = SessionStatus.Confirmed };
+            var attendance = new Attendance { Id = 10, SessionId = 1, IsPresent = true, PatientId = "P1" };
+
             _sessionRepoMock.Setup(s => s.GetByIdAsync(1)).ReturnsAsync(session);
-            _attendanceRepoMock.Setup(a => a.GetByPatientIdAndDateAsync("P1", DateTime.Today)).ReturnsAsync((Attendance)null);
-            _attendanceRepoMock.Setup(a => a.AddAsync(It.IsAny<Attendance>())).Returns(Task.CompletedTask);
+            _attendanceRepoMock.Setup(a => a.GetBySessionIdAsync(1)).ReturnsAsync(attendance);
+            _attendanceRepoMock.Setup(a => a.Update(It.IsAny<Attendance>())).Verifiable();
 
-            var result = await _service.MarkAbsentAsync(1, "P1", "Notes");
+            await _service.MarkAbsentAsync(1, "P1", "Note");
 
-            Assert.True(result >= 0);
-            _attendanceRepoMock.Verify(a => a.AddAsync(It.IsAny<Attendance>()), Times.Once);
+            _attendanceRepoMock.Verify(a => a.Update(It.Is<Attendance>(att => !att.IsPresent)), Times.Once);
             _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
         }
 
@@ -108,88 +89,63 @@ namespace ClinicManagement.Test.Services
         public async Task MarkAbsentAsync_InvalidSession_ThrowsException()
         {
             _sessionRepoMock.Setup(s => s.GetByIdAsync(1)).ReturnsAsync((Session)null);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.MarkAbsentAsync(1, "P1", "Notes"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.MarkAbsentAsync(1, "P1", "Note"));
         }
 
         [Fact]
-        public async Task MarkAbsentAsync_AlreadyExists_ThrowsException()
+        public async Task MarkAbsentAsync_MissingAttendance_ThrowsException()
         {
-            var session = new Session
-            {
-                Id = 1,
-                Status = SessionStatus.Confirmed,
-                Appointment = new Appointment { Date = DateTime.Today }
-            };
+            var session = new Session { Id = 1, Status = SessionStatus.Confirmed };
             _sessionRepoMock.Setup(s => s.GetByIdAsync(1)).ReturnsAsync(session);
-            _attendanceRepoMock.Setup(a => a.GetByPatientIdAndDateAsync("P1", DateTime.Today))
-                .ReturnsAsync(new Attendance { Id = 10 });
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.MarkAbsentAsync(1, "P1", "Notes"));
+            _attendanceRepoMock.Setup(a => a.GetBySessionIdAsync(1)).ReturnsAsync((Attendance)null);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.MarkAbsentAsync(1, "P1", "Note"));
         }
-        #endregion
 
-        #region GetDailySummaryReportAsync Tests
-        [Fact]
-        public async Task GetDailySummaryReportAsync_ReturnsCorrectSummary_InMemory()
+        #endregion
+        #region GetDailySummaryReportAsync Tests    
+        [Theory]
+        [InlineData(2, 0)] // all present
+        [InlineData(0, 2)] // all absent
+        [InlineData(1, 1)] // mixed
+        [InlineData(0, 0)] // none
+        public async Task GetDailySummaryReportAsync_ReturnsCorrectCounts(int present, int absent)
         {
             var options = new DbContextOptionsBuilder<ClinicDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
+            var loggerMock = new Mock<ILogger<ClinicDbContext>>();
             var date = DateTime.Today;
 
-            using (var context = new ClinicDbContext(options, null))
+            using (var context = new ClinicDbContext(options, loggerMock.Object))
             {
-                var doctor = new Doctor
+                for (int i = 0; i < present; i++)
                 {
-                    Id = "D1",
-                    FirstName = "Dr",
-                    LastName = "Smith",
-                    IsActive = true
-                };
+                    var appointment = new Appointment { Date = date, PatientId = $"P{i + 1}", DoctorId = "D1" , Notes="Test"};
+                    var session = new Session { Appointment = appointment, PatientId = appointment.PatientId , DoctorId = "D1" };
+                    context.Attendances.Add(new Attendance { IsPresent = true, Session = session, PatientId = appointment.PatientId });
+                }
 
-                var patient1 = new Patient { Id = "P1", FirstName = "John", LastName = "Doe", NationID = "12345678901234", IsActive = true };
-                var patient2 = new Patient { Id = "P2", FirstName = "Alice", LastName = "Smith", NationID = "23456789012345", IsActive = true };
-                var patient3 = new Patient { Id = "P3", FirstName = "Bob", LastName = "Brown", NationID = "34567890123456", IsActive = true };
+                for (int i = 0; i < absent; i++)
+                {
+                    var appointment = new Appointment { Date = date, PatientId = $"A{i + 1}", DoctorId = "D1" , Notes = "Test" };
+                    var session = new Session { Appointment = appointment, PatientId = appointment.PatientId , DoctorId = "D1" };
+                    context.Attendances.Add(new Attendance { IsPresent = false, Session = session, PatientId = appointment.PatientId });
+                }
 
-                context.Doctors.Add(doctor);
-                context.Patients.AddRange(patient1, patient2, patient3);
-                context.SaveChanges();
-
-                var appointment1 = new Appointment { Id = 1, DoctorId = doctor.Id, PatientId = patient1.Id, Date = date, Notes = "First session" };
-                var appointment2 = new Appointment { Id = 2, DoctorId = doctor.Id, PatientId = patient2.Id, Date = date, Notes = "Second session" };
-                var appointment3 = new Appointment { Id = 3, DoctorId = doctor.Id, PatientId = patient3.Id, Date = date, Notes = "Third session" };
-
-                context.Appointments.AddRange(appointment1, appointment2, appointment3);
-                context.SaveChanges();
-
-                var session1 = new Session { Id = 1, DoctorId = doctor.Id, PatientId = patient1.Id, Status = SessionStatus.Confirmed, AppointmentId = appointment1.Id, Appointment = appointment1 };
-                var session2 = new Session { Id = 2, DoctorId = doctor.Id, PatientId = patient2.Id, Status = SessionStatus.Confirmed, AppointmentId = appointment2.Id, Appointment = appointment2 };
-                var session3 = new Session { Id = 3, DoctorId = doctor.Id, PatientId = patient3.Id, Status = SessionStatus.Confirmed, AppointmentId = appointment3.Id, Appointment = appointment3 };
-
-                context.Sessions.AddRange(session1, session2, session3);
-
-                context.Attendances.AddRange(
-                    new Attendance { PatientId = patient1.Id, SessionId = session1.Id, IsPresent = true },
-                    new Attendance { PatientId = patient2.Id, SessionId = session2.Id, IsPresent = false },
-                    new Attendance { PatientId = patient3.Id, SessionId = session3.Id, IsPresent = true }
-                );
-
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 var unitOfWork = new UnitOfWork(context);
                 var service = new AttendanceService(unitOfWork);
 
-                var result = await service.GetDailySummaryReportAsync(date);
+                var summary = await service.GetDailySummaryReportAsync(date);
 
-                Assert.Equal(2, result.PresentCount);
-                Assert.Equal(1, result.AbsentCount);
-                Assert.Equal(3, result.TotalPatients);
-                Assert.Equal(date, result.Date);
+                Assert.Equal(present + absent, summary.TotalPatients);
+                Assert.Equal(present, summary.PresentCount);
+                Assert.Equal(absent, summary.AbsentCount);
+                Assert.Equal(date, summary.Date);
             }
         }
         #endregion
     }
-
 }

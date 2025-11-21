@@ -18,34 +18,6 @@ namespace ClinicManagement.Test.Commands.Bills
         }
 
         [Fact]
-        public void Should_Have_Error_When_Amount_Is_Zero_Or_Negative()
-        {
-            var model = new CreateBillCommand { Amount = 0 };
-            var result = _validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.Amount)
-                .WithErrorMessage("Amount must be greater than zero.");
-        }
-
-        [Fact]
-        public void Should_Have_Error_When_Date_Is_Empty()
-        {
-            var model = new CreateBillCommand { Date = default };
-            var result = _validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.Date)
-                .WithErrorMessage("Date is required.");
-        }
-
-        [Fact]
-        public void Should_Have_Error_When_Date_In_Future()
-        {
-            var model = new CreateBillCommand { Date = DateTime.UtcNow.AddDays(1) };
-            var result = _validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.Date)
-                .WithErrorMessage("Date cannot be in the future.");
-        }
-
-
-        [Fact]
         public void Should_Have_Error_When_SessionId_Not_Positive()
         {
             var model = new CreateBillCommand { SessionId = 0 };
@@ -68,9 +40,6 @@ namespace ClinicManagement.Test.Commands.Bills
         {
             var model = new CreateBillCommand
             {
-                Amount = 100,
-                Date = DateTime.UtcNow.AddDays(-1),
-                IsPaid = true,
                 SessionId = 5,
                 PatientId = "P1"
             };

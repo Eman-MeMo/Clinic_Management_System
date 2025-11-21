@@ -25,6 +25,9 @@ namespace ClinicManagement.Infrastructure.Services
                 throw new InvalidOperationException("Session not valid for attendance.");
 
             var attendance = await unitOfWork.AttendanceRepository.GetBySessionIdAsync(sessionId);
+            if (attendance == null)
+                throw new InvalidOperationException("Attendance record not found for the session.");
+
             attendance.IsPresent = true;
             
             unitOfWork.AttendanceRepository.Update(attendance);
@@ -38,6 +41,9 @@ namespace ClinicManagement.Infrastructure.Services
                 throw new InvalidOperationException("Session not valid for attendance.");
 
             var attendance = await unitOfWork.AttendanceRepository.GetBySessionIdAsync(sessionId);
+            if (attendance == null)
+                throw new InvalidOperationException("Attendance record not found for the session.");
+
             attendance.IsPresent = false;
 
             unitOfWork.AttendanceRepository.Update(attendance);

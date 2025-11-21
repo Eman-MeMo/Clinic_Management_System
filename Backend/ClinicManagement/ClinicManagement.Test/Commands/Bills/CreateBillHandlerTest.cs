@@ -29,17 +29,16 @@ namespace ClinicManagement.Test.Commands.Bills
             {
                 PatientId = "P1",
                 SessionId = 2,
-                Amount = 500
             };
 
             _billingServiceMock
-                .Setup(s => s.CreateBillAsync(command.PatientId, command.SessionId, command.Amount))
+                .Setup(s => s.CreateBillAsync(command.PatientId, command.SessionId))
                 .ReturnsAsync(10);
 
             var result = await _handler.Handle(command, CancellationToken.None);
 
             Assert.Equal(10, result);
-            _billingServiceMock.Verify(s => s.CreateBillAsync("P1", 2, 500), Times.Once);
+            _billingServiceMock.Verify(s => s.CreateBillAsync("P1", 2), Times.Once);
         }
 
         [Fact]

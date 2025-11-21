@@ -166,6 +166,18 @@ namespace ClinicManagement.Test.Services
             var success = (bool)result.GetType().GetProperty("success").GetValue(result);
             Assert.False(success);
         }
+        [Fact]
+        public async Task LoginAsync_InactiveUser_ReturnsFailure()
+        {
+            var user = new AppUser { Id = "1", Email = "test@test.com", IsActive = false };
+            _userManagerMock.Setup(x => x.FindByEmailAsync("test@test.com")).ReturnsAsync(user);
+
+            var service = new AccountService(_userManagerMock.Object, _configMock.Object);
+            var result = await service.LoginAsync("test@test.com", "password");
+
+            var success = (bool)result.GetType().GetProperty("success").GetValue(result);
+            Assert.False(success);
+        }
         #endregion
     }
 

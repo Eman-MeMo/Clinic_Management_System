@@ -151,8 +151,8 @@ namespace ClinicManagement.API
 
             app.UseCors("AllowSpecificOrigin");
 
-            app.UseAuthentication(); 
-
+            app.UseAuthentication();
+            app.UseMiddleware<ActiveUserMiddleware>();
             app.UseAuthorization();
 
             app.MapControllers();

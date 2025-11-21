@@ -22,8 +22,6 @@ namespace ClinicManagement.Test.Commands.Payments
         {
             var command = new CreatePaymentCommand
             {
-                Amount = 200,
-                Date = DateTime.UtcNow,
                 BillId = 1,
                 PaymentMethod = PaymentMethod.Cash
             };
@@ -34,46 +32,10 @@ namespace ClinicManagement.Test.Commands.Payments
         }
 
         [Fact]
-        public void Validate_AmountLessThanOrEqualZero_ReturnsError()
-        {
-            var command = new CreatePaymentCommand
-            {
-                Amount = 0,
-                Date = DateTime.UtcNow,
-                BillId = 1,
-                PaymentMethod = PaymentMethod.Cash
-            };
-
-            var result = _validator.Validate(command);
-
-            Assert.False(result.IsValid);
-            Assert.Contains(result.Errors, e => e.ErrorMessage == "Amount must be greater than zero.");
-        }
-
-        [Fact]
-        public void Validate_DateInFuture_ReturnsError()
-        {
-            var command = new CreatePaymentCommand
-            {
-                Amount = 100,
-                Date = DateTime.UtcNow.AddDays(1),
-                BillId = 1,
-                PaymentMethod = PaymentMethod.Cash
-            };
-
-            var result = _validator.Validate(command);
-
-            Assert.False(result.IsValid);
-            Assert.Contains(result.Errors, e => e.ErrorMessage == "Date cannot be in the future.");
-        }
-
-        [Fact]
         public void Validate_BillIdLessThanOrEqualZero_ReturnsError()
         {
             var command = new CreatePaymentCommand
             {
-                Amount = 100,
-                Date = DateTime.UtcNow,
                 BillId = 0,
                 PaymentMethod = PaymentMethod.Cash
             };

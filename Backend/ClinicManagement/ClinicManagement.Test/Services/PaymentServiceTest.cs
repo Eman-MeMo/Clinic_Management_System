@@ -1,12 +1,11 @@
-﻿using ClinicManagement.Application.Services;
+﻿using ClinicManagement.Application.Interfaces;
+using ClinicManagement.Application.Services;
 using ClinicManagement.Domain.Entities;
 using ClinicManagement.Domain.Enums;
-using ClinicManagement.Application.Interfaces;
 using Moq;
 using System;
 using System.Threading.Tasks;
 using Xunit;
-using ClinicManagement.Infrastructure.Repositories;
 
 namespace ClinicManagement.Test.Services
 {
@@ -35,7 +34,7 @@ namespace ClinicManagement.Test.Services
             _billRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Bill)null);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _service.CreatePayment(1, 100, PaymentMethod.Cash));
+                _service.CreatePayment(1, PaymentMethod.Cash));
         }
 
         [Fact]
@@ -45,17 +44,7 @@ namespace ClinicManagement.Test.Services
             _billRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(bill);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _service.CreatePayment(1, 100, PaymentMethod.Cash));
-        }
-
-        [Fact]
-        public async Task CreatePayment_AmountMismatch_ThrowsException()
-        {
-            var bill = new Bill { Id = 1, Amount = 100, IsPaid = false };
-            _billRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(bill);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _service.CreatePayment(1, 50, PaymentMethod.Cash));
+                _service.CreatePayment(1, PaymentMethod.Cash));
         }
 
         [Fact]
@@ -66,10 +55,10 @@ namespace ClinicManagement.Test.Services
             _paymentRepoMock.Setup(r => r.AddAsync(It.IsAny<Payment>())).Returns(Task.CompletedTask);
             _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
 
-            var paymentId = await _service.CreatePayment(1, 100, PaymentMethod.Cash);
+            var paymentId = await _service.CreatePayment(1, PaymentMethod.Cash);
 
             Assert.True(paymentId >= 0);
-            Assert.True(bill.IsPaid); // Bill marked as paid
+            Assert.True(bill.IsPaid);
             _paymentRepoMock.Verify(r => r.AddAsync(It.IsAny<Payment>()), Times.Once);
             _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
         }

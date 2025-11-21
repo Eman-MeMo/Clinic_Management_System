@@ -1,10 +1,7 @@
 ﻿using ClinicManagement.Application.Commands.WorkSchedules.CreateWorkSchedule;
 using FluentValidation.TestHelper;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Xunit;
 
 namespace ClinicManagement.Test.Commands.WorkSchedules
 {
@@ -66,8 +63,10 @@ namespace ClinicManagement.Test.Commands.WorkSchedules
 
             var result = _validator.TestValidate(command);
 
-            result.ShouldHaveValidationErrorFor(x => x.StartTime);
-            result.ShouldHaveValidationErrorFor(x => x.EndTime);
+            result.ShouldHaveValidationErrorFor(x => x.StartTime)
+                  .WithErrorMessage("Start time must be earlier than end time.");
+            result.ShouldHaveValidationErrorFor(x => x.EndTime)
+                  .WithErrorMessage("End time must be later than start time.");
         }
 
         [Fact]
@@ -89,20 +88,39 @@ namespace ClinicManagement.Test.Commands.WorkSchedules
         }
 
         [Fact]
-        public void Validate_IsAvailableNotSet_ReturnsError()
+        public void Validate_StartTimeNotSet_ReturnsError()
+        {
+            var command = new CreateWorkScheduleCommand
+            {
+                DoctorId = "D1",
+                DayOfWeek = DayOfWeek.Wednesday,
+                StartTime = default,
+                EndTime = DateTime.Now.AddHours(3),
+                IsAvailable = true
+            };
+
+            var result = _validator.TestValidate(command);
+
+            result.ShouldHaveValidationErrorFor(x => x.StartTime)
+                  .WithErrorMessage("Start time is required.");
+        }
+
+        [Fact]
+        public void Validate_EndTimeNotSet_ReturnsError()
         {
             var command = new CreateWorkScheduleCommand
             {
                 DoctorId = "D1",
                 DayOfWeek = DayOfWeek.Wednesday,
                 StartTime = DateTime.Now.AddHours(1),
-                EndTime = DateTime.Now.AddHours(3),
-                IsAvailable = default
+                EndTime = default,
+                IsAvailable = true
             };
 
             var result = _validator.TestValidate(command);
 
-            result.ShouldNotHaveAnyValidationErrors();
+            result.ShouldHaveValidationErrorFor(x => x.EndTime)
+                  .WithErrorMessage("End time is required.");
         }
     }
 }

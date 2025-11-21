@@ -1,11 +1,11 @@
 ﻿using ClinicManagement.Application.Commands.Attendances.MarkAbsent;
 using ClinicManagement.Application.Interfaces;
+using MediatR;
 using Moq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace ClinicManagement.Test.Commands.Attendances
 {
@@ -23,7 +23,8 @@ namespace ClinicManagement.Test.Commands.Attendances
         [Fact]
         public async Task Handle_ShouldThrowArgumentNullException_WhenRequestIsNull()
         {
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _handler.Handle(null, CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentNullException>(() =>
+                _handler.Handle(null, CancellationToken.None));
         }
 
         [Fact]
@@ -36,12 +37,14 @@ namespace ClinicManagement.Test.Commands.Attendances
                 Notes = "Absent"
             };
 
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() => _handler.Handle(command, CancellationToken.None));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+                _handler.Handle(command, CancellationToken.None));
+
             Assert.Equal("Session ID cannot be less than 1.", ex.Message);
         }
 
         [Fact]
-        public async Task Handle_ShouldReturnResult_WhenValidRequest()
+        public async Task Handle_ShouldReturnUnit_WhenValidRequest()
         {
             var command = new MarkAbsentCommand
             {
@@ -52,12 +55,14 @@ namespace ClinicManagement.Test.Commands.Attendances
 
             _attendanceServiceMock
                 .Setup(s => s.MarkAbsentAsync(command.SessionId, command.PatientId, command.Notes))
-                .ReturnsAsync(1);
+                .Returns(Task.CompletedTask); 
 
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            Assert.Equal(1, result);
-            _attendanceServiceMock.Verify(s => s.MarkAbsentAsync(command.SessionId, command.PatientId, command.Notes), Times.Once);
+            Assert.Equal(Unit.Value, result); 
+            _attendanceServiceMock.Verify(s =>
+                s.MarkAbsentAsync(command.SessionId, command.PatientId, command.Notes), Times.Once);
         }
+
     }
 }

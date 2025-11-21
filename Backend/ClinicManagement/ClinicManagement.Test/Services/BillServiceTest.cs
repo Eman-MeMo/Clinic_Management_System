@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using ClinicManagement.Application.Interfaces;
-using ClinicManagement.Infrastructure.Repositories;
 
 namespace ClinicManagement.Test.Services
 {
@@ -17,6 +16,7 @@ namespace ClinicManagement.Test.Services
         private readonly Mock<IPaymentRepository> _paymentRepoMock;
         private readonly Mock<IPatientRepository> _patientRepoMock;
         private readonly Mock<ISessionRepository> _sessionRepoMock;
+        private readonly Mock<ISessionServiceRepository> _sessionServiceRepoMock;
         private readonly IBillingService _service;
 
         public BillingServiceTest()
@@ -26,11 +26,13 @@ namespace ClinicManagement.Test.Services
             _paymentRepoMock = new Mock<IPaymentRepository>();
             _patientRepoMock = new Mock<IPatientRepository>();
             _sessionRepoMock = new Mock<ISessionRepository>();
+            _sessionServiceRepoMock = new Mock<ISessionServiceRepository>();
 
             _unitOfWorkMock.Setup(u => u.BillRepository).Returns(_billRepoMock.Object);
             _unitOfWorkMock.Setup(u => u.PaymentRepository).Returns(_paymentRepoMock.Object);
             _unitOfWorkMock.Setup(u => u.PatientRepository).Returns(_patientRepoMock.Object);
             _unitOfWorkMock.Setup(u => u.SessionRepository).Returns(_sessionRepoMock.Object);
+            _unitOfWorkMock.Setup(u => u.SessionServiceRepository).Returns(_sessionServiceRepoMock.Object);
 
             _service = new BillingService(_unitOfWorkMock.Object);
         }
@@ -85,13 +87,15 @@ namespace ClinicManagement.Test.Services
             _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
         }
         #endregion
+
         #region CreateBillAsync Tests
         [Fact]
         public async Task CreateBillAsync_PatientNotFound_ThrowsException()
         {
             _patientRepoMock.Setup(r => r.GetByIdAsync("P1")).ReturnsAsync((Patient)null);
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CreateBillAsync("P1", 1, 100));
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.CreateBillAsync("P1", 1));
         }
 
         [Fact]
@@ -100,7 +104,8 @@ namespace ClinicManagement.Test.Services
             _patientRepoMock.Setup(r => r.GetByIdAsync("P1")).ReturnsAsync(new Patient { Id = "P1" });
             _sessionRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Session)null);
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CreateBillAsync("P1", 1, 100));
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.CreateBillAsync("P1", 1));
         }
 
         [Fact]
@@ -110,7 +115,20 @@ namespace ClinicManagement.Test.Services
             _sessionRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Session { Id = 1 });
             _billRepoMock.Setup(r => r.GetBySessionAsync(1)).ReturnsAsync(new List<Bill> { new Bill() }.AsQueryable());
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CreateBillAsync("P1", 1, 100));
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.CreateBillAsync("P1", 1));
+        }
+
+        [Fact]
+        public async Task CreateBillAsync_NoServices_ThrowsException()
+        {
+            _patientRepoMock.Setup(r => r.GetByIdAsync("P1")).ReturnsAsync(new Patient { Id = "P1" });
+            _sessionRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Session { Id = 1 });
+            _billRepoMock.Setup(r => r.GetBySessionAsync(1)).ReturnsAsync(Enumerable.Empty<Bill>().AsQueryable());
+            _sessionServiceRepoMock.Setup(r => r.GetAllBySessionIdAsync(1)).ReturnsAsync(new List<SessionService>());
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.CreateBillAsync("P1", 1));
         }
 
         [Fact]
@@ -118,17 +136,23 @@ namespace ClinicManagement.Test.Services
         {
             var patient = new Patient { Id = "P1" };
             var session = new Session { Id = 1 };
+            var services = new List<SessionService>
+            {
+                new SessionService { Service = new Service { Price = 50 } },
+                new SessionService { Service = new Service { Price = 100 } }
+            };
 
             _patientRepoMock.Setup(r => r.GetByIdAsync("P1")).ReturnsAsync(patient);
             _sessionRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(session);
             _billRepoMock.Setup(r => r.GetBySessionAsync(1)).ReturnsAsync(Enumerable.Empty<Bill>().AsQueryable());
+            _sessionServiceRepoMock.Setup(r => r.GetAllBySessionIdAsync(1)).ReturnsAsync(services);
             _billRepoMock.Setup(r => r.AddAsync(It.IsAny<Bill>())).Returns(Task.CompletedTask);
             _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
 
-            var billId = await _service.CreateBillAsync("P1", 1, 150);
+            var billId = await _service.CreateBillAsync("P1", 1);
 
             Assert.True(billId >= 0);
-            _billRepoMock.Verify(r => r.AddAsync(It.IsAny<Bill>()), Times.Once);
+            _billRepoMock.Verify(r => r.AddAsync(It.Is<Bill>(b => b.Amount == 150)), Times.Once);
             _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
         }
         #endregion
