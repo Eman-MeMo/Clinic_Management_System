@@ -8,6 +8,7 @@ using ClinicManagement.Application.Queries.WorkSchedules.GetWeeklySchedule;
 using ClinicManagement.Domain.DTOs.WorkScheduleDTOs;
 using ClinicManagement.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -16,6 +17,7 @@ namespace ClinicManagement.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Doctor")]
     public class WorkScheduleController : ControllerBase
     {
         private readonly IUnitOfWork unitOfWork;

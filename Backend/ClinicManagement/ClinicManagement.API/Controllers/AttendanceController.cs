@@ -10,6 +10,7 @@ using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.DTOs.PatientDTOs;
 using ClinicManagement.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ namespace ClinicManagement.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Doctor")]
     public class AttendanceController : ControllerBase
     {
         private readonly IUnitOfWork unitOfWork;

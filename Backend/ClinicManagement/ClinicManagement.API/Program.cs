@@ -18,6 +18,7 @@ using ClinicManagement.Application.Strategies;
 using ClinicManagement.Application.Services;
 using ClinicManagement.Infrastructure.Services;
 using ClinicManagement.API.Middlewares;
+using Microsoft.OpenApi.Models;
 
 namespace ClinicManagement.API
 {
@@ -135,6 +136,32 @@ namespace ClinicManagement.API
 
             // Configure Serilog as the logging provider
             builder.Host.UseSerilog();
+
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter 'Bearer' [space] and then your valid token."
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
 
             var app = builder.Build();
 

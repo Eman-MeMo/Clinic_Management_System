@@ -7,6 +7,7 @@ using ClinicManagement.Application.Queries.Payments.GetPaymentStatus;
 using ClinicManagement.Domain.DTOs.Pagination;
 using ClinicManagement.Domain.DTOs.PaymentDTOs;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ namespace ClinicManagement.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Patient")]
     public class PaymentController : ControllerBase
     {
         private readonly IUnitOfWork unitOfWork;
