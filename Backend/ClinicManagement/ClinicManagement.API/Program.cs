@@ -19,6 +19,7 @@ using ClinicManagement.Application.Services;
 using ClinicManagement.Infrastructure.Services;
 using ClinicManagement.API.Middlewares;
 using Microsoft.OpenApi.Models;
+using ClinicManagement.API.Extensions;
 
 namespace ClinicManagement.API
 {
@@ -28,7 +29,7 @@ namespace ClinicManagement.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Configure Serilog for logging from appsettings.json
+            // Serilog
             Log.Logger = new LoggerConfiguration()
                     .ReadFrom.Configuration(builder.Configuration)
                     .CreateLogger();
@@ -36,132 +37,13 @@ namespace ClinicManagement.API
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
-            // Configure EF Core with SQL Server
-            builder.Services.AddDbContext<ClinicDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("ClinicManagementDb")));
-
-            // Configure Identity
-            builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
-            {
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequireUppercase = true;
-                options.User.RequireUniqueEmail = true;
-            })
-            .AddEntityFrameworkStores<ClinicDbContext>()
-            .AddDefaultTokenProviders();
-
-            // AutoMapper
-            builder.Services.AddMappingProfiles();
-
-            // MediatR
-            builder.Services.AddMediatR(cfg =>
-                cfg.RegisterServicesFromAssembly(typeof(BookAppointmentCommand).Assembly));
-
-            // FluentValidation
-            builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
-            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-
-            // JWT Authentication
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-                    )
-                };
-            });
-
-            // CORS
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowSpecificOrigin", policy =>
-                {
-                    policy.WithOrigins("http://localhost:4200")
-                          .AllowAnyHeader()
-                          .AllowAnyMethod()
-                          .AllowCredentials();
-                });
-            });
-
-            // Dependency Injection for Repositories and Services
-                // Repositories
-                builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
-                builder.Services.AddScoped<IPatientRepository, PatientRepository>();
-                builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-                builder.Services.AddScoped(typeof(IUserRepository<>), typeof(UserRepository<>));
-                builder.Services.AddScoped<IAttendanceRepository,AttendanceRepository>();
-                builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
-                builder.Services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
-                builder.Services.AddScoped<IWorkScheduleRepository, WorkScheduleRepository>();
-                builder.Services.AddScoped<IBillRepository, BillRepository>();
-                builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
-                builder.Services.AddScoped<ISessionServiceRepository, SessionServiceRepository>();
-                builder.Services.AddScoped<ISessionRepository, SessionRepository>();
-                builder.Services.AddScoped(typeof(IUserService<>), typeof(UserService<>));
-                builder.Services.AddScoped<IDoctorAvailabilityService, DoctorAvailabilityService>();
-                builder.Services.AddScoped<IAttendanceService, AttendanceService>();
-                builder.Services.AddScoped<IAccountService, AccountService>();
-                builder.Services.AddScoped<ISessionManagementService, SessionManagementService>();
-                builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
-                builder.Services.AddScoped<IPaymentService, PaymentService>();
-                builder.Services.AddScoped<IBillingService, BillingService>();
-                builder.Services.AddScoped<IDoctorService, DoctorService>();
-                builder.Services.AddScoped<IPatientService, PatientService>();
-                builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
-                builder.Services.AddScoped<DoctorAvailabilityService>();
-                builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
-                // For Stragegy Pattern
-                builder.Services.AddScoped<IUserDeactivationStrategy, DoctorDeactivationStrategy>();
-                builder.Services.AddScoped<IUserDeactivationStrategy, PatientDeactivationStrategy>();
-                builder.Services.AddScoped<IUserDeactivationStrategy, AdminDeactivationStrategy>();
-
-            // Unit of Work
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-            // Configure Serilog as the logging provider
             builder.Host.UseSerilog();
 
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer",
-                    BearerFormat = "JWT",
-                    In = ParameterLocation.Header,
-                    Description = "Enter 'Bearer' [space] and then your valid token."
-                });
-
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-                        },
-                        Array.Empty<string>()
-                    }
-                });
-            });
+            builder.Services.AddApplicationLayer();
+            builder.Services.AddInfrastructureLayer(builder.Configuration);
+            builder.Services.AddJwtAuthentication(builder.Configuration);
+            builder.Services.AddSwaggerWithAuth();
+            builder.Services.AddCorsPolicy();
 
             var app = builder.Build();
 
