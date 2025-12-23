@@ -66,7 +66,7 @@ namespace ClinicManagement.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateWorkSchedule(int id, UpdateWorkScheduleCommand command)
+        public async Task<IActionResult> UpdateWorkSchedule(int id,[FromBody] UpdateWorkScheduleCommand command)
         {
             if (command == null || id != command.Id)
             {

@@ -19,6 +19,7 @@ namespace ClinicManagement.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Patient,Doctor")]
     public class AppointmentController : ControllerBase
     {
         private readonly IUnitOfWork unitOfWork;
@@ -121,7 +122,7 @@ namespace ClinicManagement.API.Controllers
         }
 
         [HttpPut("status/{id:int}")]
-        public async Task<IActionResult> UpdateAppointmentStatus(int id, [FromBody] AppointmentStatus status)
+        public async Task<IActionResult> UpdateAppointmentStatus(int id, AppointmentStatus status)
         {
             await mediator.Send(new UpdateAppointmentStatusCommand { AppointmentId = id, Status = status });
             return NoContent();

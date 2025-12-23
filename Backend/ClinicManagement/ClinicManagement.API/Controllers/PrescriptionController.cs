@@ -8,11 +8,13 @@ using ClinicManagement.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using ClinicManagement.Domain.DTOs.Pagination;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ClinicManagement.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Patient,Doctor")]
     public class PrescriptionController : ControllerBase
     {
         private readonly IUnitOfWork unitOfWork;
